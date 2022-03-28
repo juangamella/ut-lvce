@@ -31,17 +31,17 @@
 """
 """
 
-from ut_lvcm.model import Model
-from ut_lvcm.score import Score, _Cache
-import ut_lvcm.score
+from utlvce.model import Model
+from utlvce.score import Score, _Cache
+import utlvce.score
 import unittest
 import numpy as np
 import sempler.generators
 import time
 from termcolor import colored
-import ut_lvcm.utils as utils
+import utlvce.utils as utils
 
-NUM_GRAPHS = 0
+NUM_GRAPHS = 1
 
 
 # Tested functions
@@ -53,7 +53,8 @@ def spectral_norm(X):
 
 def sample_model(p, I, num_latent, e, var_lo, var_hi, B_lo, B_hi, random_state=42, verbose=0):
     rng = np.random.default_rng(random_state)
-    B = sempler.generators.dag_avg_deg(p, 2.5, B_lo, B_hi, random_state=random_state)
+    B = sempler.generators.dag_avg_deg(
+        p, 2.5, B_lo, B_hi, random_state=random_state)
     A = (B != 0).astype(int)
     gamma = rng.normal(0, 1 / np.sqrt(p), size=(num_latent, p))
     omegas = rng.uniform(var_hi * 1.5, var_hi * 3, size=(e, p))
@@ -130,9 +131,11 @@ class ScoreDagTests(unittest.TestCase):
                 model.A, set(range(model.p)), init_model=model, verbose=0)
 
             estimated_B = estimated_model.B
-            print("  diff. wrt. population B", abs(model.B - estimated_B).max())
+            print("  diff. wrt. population B",
+                  abs(model.B - estimated_B).max())
             diff_scores = estimate_score - pop_score
-            text = "  diff. wrt. to pop score = %s - pop. score = %s" % (diff_scores, pop_score)
+            text = "  diff. wrt. to pop score = %s - pop. score = %s" % (
+                diff_scores, pop_score)
             thresh = 0
             if diff_scores > thresh:
                 print("*** (> %s)" % thresh, colored(text, 'red'))
@@ -194,7 +197,8 @@ class ScoreDagTests(unittest.TestCase):
                 print("*** (> %s)" % thresh, colored(text, 'red'))
             else:
                 print(text)
-            print("  diff. wrt. to pop score =", estimate_score - pop_score, pop_score)
+            print("  diff. wrt. to pop score =",
+                  estimate_score - pop_score, pop_score)
             self.assertLess(estimate_score - pop_score, 5e-2)
             # print("Population B\n",model.B)
             # print("Estimated B\n", estimated_B)
@@ -216,7 +220,8 @@ class ScoreDagTests(unittest.TestCase):
         var_lo, var_hi = 1, 2
         B_lo, B_hi = 0.6, 0.8
         print("\n" + "-" * 70)
-        print("Testing alternating procedure with population covariances and wrong adjacency")
+        print(
+            "Testing alternating procedure with population covariances and wrong adjacency")
         for i in range(G):
             print("\nGraph %d" % i)
             # Build model
@@ -247,8 +252,9 @@ class ScoreDagTests(unittest.TestCase):
             self.assertTrue(np.allclose(estimated_B[mask], 0))
             diff_wrt_pop = abs(model.B - estimated_B).max()
             print("  diff. wrt. population B = %s" % diff_wrt_pop)
-            print("  diff. wrt. to pop score =", estimate_score - pop_score, pop_score)
-            self.assertGreater(estimate_score - pop_score, 1)
+            print("  diff. wrt. to pop score =",
+                  estimate_score - pop_score, pop_score)
+            self.assertGreater(estimate_score - pop_score, 0.5)
             # print("Population B\n",model.B)
             # print("Estimated B\n", estimated_B)
 
@@ -302,7 +308,8 @@ class ScoreDagTests(unittest.TestCase):
                 print(text)
             # Check distance of estimate's score and pop. score
             diff_scores = estimate_score - pop_score
-            text = "  diff. wrt. to pop score = %s - pop. score = %s" % (diff_scores, pop_score)
+            text = "  diff. wrt. to pop score = %s - pop. score = %s" % (
+                diff_scores, pop_score)
             if diff_scores > 0:
                 print("*** (> 0)" % thresh, colored(text, 'red'))
             else:
@@ -363,7 +370,8 @@ class ScoreDagTests(unittest.TestCase):
                 print(text)
             # Check distance of estimate's score and pop. score
             diff_scores = estimate_score - pop_score
-            text = "  diff. wrt. to pop score = %s - pop. score = %s" % (diff_scores, pop_score)
+            text = "  diff. wrt. to pop score = %s - pop. score = %s" % (
+                diff_scores, pop_score)
             thresh = 0
             if diff_scores > thresh:
                 print("*** (> %s)" % thresh, colored(text, 'red'))
@@ -395,7 +403,8 @@ class ScoreDagTests(unittest.TestCase):
         B_lo, B_hi = 0.6, 0.8
         n = 1000
         print("\n" + "-" * 70)
-        print("Testing procedure with vs. without fixed-psi on a finite sample (n_e = %d)" % n)
+        print(
+            "Testing procedure with vs. without fixed-psi on a finite sample (n_e = %d)" % n)
         for i in range(G):
             print("\nGraph %d" % i)
             # Build model
@@ -438,7 +447,8 @@ class ScoreDagTests(unittest.TestCase):
             # Check difference in distances to population B (estimate
             # with latents should be closer)
             dist_B_latents = abs(estimated_model_latents.B - model.B).max()
-            dist_B_no_latents = abs(estimated_model_no_latents.B - model.B).max()
+            dist_B_no_latents = abs(
+                estimated_model_no_latents.B - model.B).max()
             diff_dists = dist_B_latents - dist_B_no_latents
             text = "  dist. to population B w. latents < wo. latents: %s - diff = %s" % (
                 dist_B_latents < dist_B_no_latents, diff_dists)
@@ -473,7 +483,8 @@ class ScoreDagTests(unittest.TestCase):
         B_lo, B_hi = 0.6, 0.8
         n = 1000
         print("\n" + "-" * 70)
-        print("Testing procedure with vs. without latents on a finite sample (n_e = %d)" % n)
+        print(
+            "Testing procedure with vs. without latents on a finite sample (n_e = %d)" % n)
         for i in range(G):
             print("\nGraph %d" % i)
             # Build model
@@ -505,7 +516,8 @@ class ScoreDagTests(unittest.TestCase):
             print("  Done in %0.2f seconds" % (time.time() - start))
             # print(estimated_model.psis)
             # print(estimated_model_fixed.psis)
-            self.assertTrue((estimated_model_fixed.psis[0, :] == estimated_model_fixed.psis).all())
+            self.assertTrue(
+                (estimated_model_fixed.psis[0, :] == estimated_model_fixed.psis).all())
             # Check difference in scores
             diff_scores = estimate_score - estimate_score_fixed
             text = "  score unconstrained < score fixed psi: %s - diff = %s - pop. score = %s" % (
@@ -555,7 +567,8 @@ class ScoreDagTests(unittest.TestCase):
         print("Testing alternating procedure with population covariances and different interventions")
         for i in range(G):
             # Sample intervention targets
-            true_I = set(sempler.generators.intervention_targets(p, 1, size_I)[0])
+            true_I = set(
+                sempler.generators.intervention_targets(p, 1, size_I)[0])
             # Build model
             model = sample_model(p, true_I, num_latent, e, var_lo,
                                  var_hi, B_lo, B_hi, random_state=i)
@@ -565,20 +578,24 @@ class ScoreDagTests(unittest.TestCase):
             # Get equivalent DAGs
             icpdag = utils.dag_to_icpdag(model.A, true_I)
             equivalent_dags = utils.all_dags(icpdag)
-            print("\nGraph %d - I* = %s - %d equivalent DAGs" % (i, true_I, len(equivalent_dags)))
+            print("\nGraph %d - I* = %s - %d equivalent DAGs" %
+                  (i, true_I, len(equivalent_dags)))
             for k, dag in enumerate(equivalent_dags):
                 for I in [true_I, set(range(p))]:
-                    print("  Eq. graph %d/%d; I = %s" % (k + 1, len(equivalent_dags), I))
+                    print("  Eq. graph %d/%d; I = %s" %
+                          (k + 1, len(equivalent_dags), I))
                     start = time.time()
                     score_class = Score((sample_covariances, n_obs),
                                         num_latent=num_latent, psi_max=None, psi_fixed=False,
                                         max_iter=1000, threshold_dist_B=1e-3,
                                         threshold_fluctuation=1, max_fluctuations=10,
                                         threshold_score=1e-6, learning_rate=10)
-                    estimated_model, estimate_score = score_class.score_dag(dag, I, verbose=0)
+                    estimated_model, estimate_score = score_class.score_dag(
+                        dag, I, verbose=0)
                     mask = np.logical_not(dag)
                     print("    Done in %0.2f seconds" % (time.time() - start))
-                    print("    diff. wrt. to pop score =", estimate_score - pop_score, pop_score)
+                    print("    diff. wrt. to pop score =",
+                          estimate_score - pop_score, pop_score)
                     self.assertLess(estimate_score - pop_score, 5e-2)
                     self.assertTrue(np.allclose(estimated_model.B[mask], 0))
 
@@ -602,10 +619,12 @@ class ScoreDagTests(unittest.TestCase):
         n = 1000
         size_I = (1, 4)
         print("\n" + "-" * 70)
-        print("Testing alternating procedure with finite sample and different interventions")
+        print(
+            "Testing alternating procedure with finite sample and different interventions")
         for i in range(G):
             # Sample intervention targets
-            true_I = set(sempler.generators.intervention_targets(p, 1, size_I, random_state=i)[0])
+            true_I = set(sempler.generators.intervention_targets(
+                p, 1, size_I, random_state=i)[0])
             # Build model
             model = sample_model(p, true_I, num_latent, e, var_lo,
                                  var_hi, B_lo, B_hi, random_state=i)
@@ -617,7 +636,8 @@ class ScoreDagTests(unittest.TestCase):
             idx = utils.member(equivalent_dags, model.A)
             equivalent_dags = [equivalent_dags[idx]] + [equivalent_dags[k]
                                                         for k in range(len(equivalent_dags)) if k != idx]
-            print("\n\nGraph %d - I* = %s - %d equivalent DAGs" % (i, true_I, len(equivalent_dags)))
+            print("\n\nGraph %d - I* = %s - %d equivalent DAGs" %
+                  (i, true_I, len(equivalent_dags)))
             scores = []
             for k, dag in enumerate(equivalent_dags):
                 # Build scores for all DAGs
@@ -627,19 +647,22 @@ class ScoreDagTests(unittest.TestCase):
                 estimated_Bs = []
                 # Score for true-I and all-I
                 for I in [true_I, set(range(p))]:
-                    print("    Scoring graph %d/%d with I = %s" % (k + 1, len(equivalent_dags), I))
+                    print("    Scoring graph %d/%d with I = %s" %
+                          (k + 1, len(equivalent_dags), I))
                     start = time.time()
                     score_class = Score((sample_covariances, n_obs),
                                         num_latent=num_latent, psi_max=2, psi_fixed=False,
                                         max_iter=1000, threshold_dist_B=1e-3,
                                         threshold_fluctuation=1, max_fluctuations=10,
                                         threshold_score=1e-6, learning_rate=10)
-                    estimated_model, estimate_score = score_class.score_dag(dag, I, verbose=0)
+                    estimated_model, estimate_score = score_class.score_dag(
+                        dag, I, verbose=0)
                     estimated_psis.append(estimated_model.psis)
                     estimated_gammas.append(estimated_model.gamma)
                     estimated_omegas.append(estimated_model.omegas)
                     estimated_Bs.append(estimated_model.B)
-                    print("      Done in %0.2f seconds" % (time.time() - start))
+                    print("      Done in %0.2f seconds" %
+                          (time.time() - start))
                     print("      diff. wrt. to score of pop. params=",
                           estimate_score - pop_score, pop_score)
                     self.assertLess(estimate_score - pop_score, 5e-2)
@@ -656,9 +679,12 @@ class ScoreDagTests(unittest.TestCase):
                 estimated_omegas = np.array(estimated_omegas)
                 estimated_psis = np.array(estimated_psis)
                 print("      Max. difference between I* and full-I estimates for")
-                print("        B = %s" % abs(estimated_Bs[0] - estimated_Bs[1]).max())
-                print("        gammas = %s" % abs(estimated_gammas[0] - estimated_gammas[1]).max())
-                print("        omegas %s" % abs(estimated_omegas[0] - estimated_omegas[1]).max())
+                print("        B = %s" %
+                      abs(estimated_Bs[0] - estimated_Bs[1]).max())
+                print("        gammas = %s" %
+                      abs(estimated_gammas[0] - estimated_gammas[1]).max())
+                print("        omegas %s" %
+                      abs(estimated_omegas[0] - estimated_omegas[1]).max())
                 # abs(estimated_psis[0] - estimated_psis[1]).max())
                 print("      Estimated psis %s" % estimated_psis)
                 print()
@@ -689,7 +715,8 @@ class BSolverTests(unittest.TestCase):
         psis = rng.uniform(size=(5, 2))
         model = Model(A, B, gamma, omegas, psis)
         X, sample_covariances, n_obs = model.sample(100)
-        B = ut_lvcm.score._solve_for_B(model, sample_covariances, n_obs, self.debug)
+        B = utlvce.score._solve_for_B_grad(
+            model, sample_covariances, n_obs, self.debug)
         mask = np.logical_not(A)
         self.assertTrue(np.allclose(B[mask], 0))
 
@@ -704,9 +731,11 @@ class BSolverTests(unittest.TestCase):
         omegas = rng.uniform(size=(5, 3))
         psis = rng.uniform(size=(5, 2))
         model = Model(A, B, gamma, omegas, psis)
-        X, sample_covariances, n_obs = model.sample(round(1e6), random_state=42)
+        X, sample_covariances, n_obs = model.sample(
+            round(1e6), random_state=42)
         # Solve for B
-        estimated_B = ut_lvcm.score._solve_for_B(model, sample_covariances, n_obs, self.debug)
+        estimated_B = utlvce.score._solve_for_B_grad(
+            model, sample_covariances, n_obs, self.debug)
         mask = np.logical_not(A)
         self.assertTrue(np.allclose(estimated_B[mask], 0))
         self.assertLess(abs(B - estimated_B).max(), 0.001)
@@ -733,11 +762,13 @@ class BSolverTests(unittest.TestCase):
             n_obs = [1] * model.e
             #_, sample_covariances, n_obs = model.sample(10000)
 
-            estimated_B = ut_lvcm.score._solve_for_B(model, sample_covariances, n_obs, self.debug)
+            estimated_B = utlvce.score._solve_for_B_cvx(
+                model, sample_covariances, n_obs, self.debug)
             print(estimated_B)
             mask = np.logical_not(model.A)
             self.assertTrue(np.allclose(estimated_B[mask], 0))
-            print("  diff. wrt. population B =", abs(model.B - estimated_B).max())
+            print("  diff. wrt. population B =",
+                  abs(model.B - estimated_B).max())
             self.assertLess(abs(model.B - estimated_B).max(), 1e-6)
 
     def test_vs_convex(self):
@@ -771,7 +802,7 @@ class GradientDescentTests(unittest.TestCase):
             return [gradient_b, gradient_c]
 
         # Test
-        estimate, _ = ut_lvcm.score._gradient_descent(
+        estimate, _ = utlvce.score._gradient_descent(
             obj_fun, gradient_fun, np.ones(2) * -1, 1e-6, 1, None, 0)
 
         # Check that estimates are close
@@ -779,7 +810,7 @@ class GradientDescentTests(unittest.TestCase):
         self.assertLess(abs(true_c - estimate[1]), 1e-2)
 
         # Test (enforcing positive X)
-        estimate, _ = ut_lvcm.score._gradient_descent(
+        estimate, _ = utlvce.score._gradient_descent(
             obj_fun, gradient_fun, np.ones(2) * 1, 1e-6, 1, [(0, np.Inf)] * 2, 0)
 
         # Check that estimates are close
@@ -814,7 +845,7 @@ class GradientDescentTests(unittest.TestCase):
             n_obs = [1] * model.e
 
             # Solve for gamma with the population gamma as starting point
-            estimated_gamma = ut_lvcm.score._solve_for_gamma(
+            estimated_gamma = utlvce.score._solve_for_gamma(
                 model, sample_covariances, n_obs, 1e-10, 1, verbose=0)
             estimated_model = model.copy()
             estimated_model.gamma = estimated_gamma
@@ -828,7 +859,8 @@ class GradientDescentTests(unittest.TestCase):
             if (model.gamma == estimated_model.gamma).all():
                 self.assertEqual(score_pop, score_estimate)
             else:
-                max_diff_gammas = abs(model.gamma - estimated_model.gamma).max()
+                max_diff_gammas = abs(
+                    model.gamma - estimated_model.gamma).max()
                 print("  Dif. gamma wrt. pop: %s" % max_diff_gammas)
                 # If the population gamma is not the maximizer, and
                 # this is due to precision issues, make sure the
@@ -872,7 +904,7 @@ class GradientDescentTests(unittest.TestCase):
             model_init.gamma = model.gamma + \
                 rng.uniform(-perturbance, perturbance, size=(num_latent, p))
 
-            estimated_gamma = ut_lvcm.score._solve_for_gamma(
+            estimated_gamma = utlvce.score._solve_for_gamma(
                 model_init, sample_covariances, n_obs, 1e-6, 1, verbose=0)
             estimated_model = model.copy()
             estimated_model.gamma = estimated_gamma
@@ -923,7 +955,7 @@ class GradientDescentTests(unittest.TestCase):
 
             # Solve for omegas/psis with their population values as starting point
             psi_max = 2
-            estimated_omegas, estimated_psis = ut_lvcm.score._solve_for_rest(
+            estimated_omegas, estimated_psis = utlvce.score._solve_for_rest(
                 model, set(range(model.p)), sample_covariances, n_obs, psi_max, False, 1e-10, 1, verbose=0)
             estimated_model = model.copy()
             estimated_model.omegas = estimated_omegas
@@ -943,7 +975,8 @@ class GradientDescentTests(unittest.TestCase):
             if (model.psis == estimated_model.psis).all() and (model.omegas == estimated_model.omegas).all():
                 self.assertEqual(score_pop, score_estimate)
             else:
-                max_diff_omegas = abs(model.omegas - estimated_model.omegas).max()
+                max_diff_omegas = abs(
+                    model.omegas - estimated_model.omegas).max()
                 max_diff_psis = abs(model.psis - estimated_model.psis).max()
                 print("  Dif. omegas: %s" % max_diff_omegas)
                 print("  Dif. psis: %s" % max_diff_psis)
@@ -987,12 +1020,13 @@ class GradientDescentTests(unittest.TestCase):
 
             # Solve for gamma with a perturbed population gamma as starting point
             model_init = model.copy()
-            model_init.omegas = model.omegas + rng.uniform(-perturbance, perturbance, size=(e, p))
+            model_init.omegas = model.omegas + \
+                rng.uniform(-perturbance, perturbance, size=(e, p))
             model_init.psis = model.psis + \
                 rng.uniform(-perturbance, perturbance, size=(e, num_latent))
 
             psi_max = 2
-            estimated_omegas, estimated_psis = ut_lvcm.score._solve_for_rest(
+            estimated_omegas, estimated_psis = utlvce.score._solve_for_rest(
                 model_init, set(range(model.p)), sample_covariances, n_obs, psi_max, False, 1e-6, 1, verbose=0)
             estimated_model = model.copy()
             estimated_model.omegas = estimated_omegas
@@ -1004,7 +1038,8 @@ class GradientDescentTests(unittest.TestCase):
             self.assertTrue((estimated_psis < psi_max).all())
 
             # Check that the gradient descent procedure made at least one move
-            self.assertFalse((model_init.omegas == estimated_model.omegas).all())
+            self.assertFalse(
+                (model_init.omegas == estimated_model.omegas).all())
             # self.assertFalse((model_init.psis == estimated_model.psis).all())
 
             # Check that the difference in population and estimated score is very small
@@ -1016,7 +1051,8 @@ class GradientDescentTests(unittest.TestCase):
 
             print("  Dif. omegas wrt. init: %s" %
                   abs(model_init.omegas - estimated_model.omegas).max())
-            print("  Dif. psis wrt. init: %s" % abs(model_init.psis - estimated_model.psis).max())
+            print("  Dif. psis wrt. init: %s" %
+                  abs(model_init.psis - estimated_model.psis).max())
 
             # Check that the distance between estimated and population gamma is very small
             max_diff_omegas = abs(model.omegas - estimated_omegas).max()
@@ -1033,17 +1069,20 @@ class GradientDescentTests(unittest.TestCase):
         upper_bounds = lower_bounds + rng.uniform(0, 3, size=k)
 
         # Construct arrays within bounds
-        sizes = [10, (10,)] + list(zip(rng.integers(1, 3, k - 2), rng.integers(1, 4, k - 2)))
+        sizes = [10, (10,)] + list(zip(rng.integers(1, 3, k - 2),
+                                       rng.integers(1, 4, k - 2)))
         arrays = []
         for (l, h, size) in zip(lower_bounds, upper_bounds, sizes):
             arrays.append(rng.uniform(l, h, size=size))
 
         # Test that arrays within bounds always return true
-        self.assertTrue(ut_lvcm.score._is_within_bounds(arrays, zip(lower_bounds, upper_bounds)))
+        self.assertTrue(utlvce.score._is_within_bounds(
+            arrays, zip(lower_bounds, upper_bounds)))
 
         # Test that an error is raised if a lower bound > upper bound
         try:
-            ut_lvcm.score._is_within_bounds(arrays, zip(upper_bounds, lower_bounds))
+            utlvce.score._is_within_bounds(
+                arrays, zip(upper_bounds, lower_bounds))
         except ValueError as e:
             print("OK:", e)
         except Exception:
@@ -1051,9 +1090,11 @@ class GradientDescentTests(unittest.TestCase):
 
         # Test that arrays must be strictly within bounds
         arrays[0][0] = lower_bounds[0]
-        self.assertFalse(ut_lvcm.score._is_within_bounds(arrays, zip(lower_bounds, upper_bounds)))
+        self.assertFalse(utlvce.score._is_within_bounds(
+            arrays, zip(lower_bounds, upper_bounds)))
         arrays[0][0] = upper_bounds[0]
-        self.assertFalse(ut_lvcm.score._is_within_bounds(arrays, zip(lower_bounds, upper_bounds)))
+        self.assertFalse(utlvce.score._is_within_bounds(
+            arrays, zip(lower_bounds, upper_bounds)))
 
 
 # ---------------------------------------------------------------------
@@ -1075,7 +1116,8 @@ class IntializationTests(unittest.TestCase):
         var_lo, var_hi = 1, 2
         B_lo, B_hi = 0.6, 0.8
         print("\n" + "-" * 70)
-        print("Testing initialization of B with population covariances and no latent effects")
+        print(
+            "Testing initialization of B with population covariances and no latent effects")
         for i in range(G):
             print("\nGraph %d" % i)
             model = sample_model(p, set(range(p)), num_latent, e, var_lo,
@@ -1084,7 +1126,7 @@ class IntializationTests(unittest.TestCase):
             sample_covariances = model.covariances()
             n_obs = [1] * model.e
 
-            estimated_B = ut_lvcm.score._initialize_B(
+            estimated_B = utlvce.score._initialize_B(
                 model.A, sample_covariances, n_obs, init='obs')
             print("Diff. wrt. pop. B:", abs(model.B - estimated_B).max())
             self.assertLess(abs(model.B - estimated_B).max(), 1e-10)
@@ -1109,7 +1151,7 @@ class IntializationTests(unittest.TestCase):
             sample_covariances = model.covariances()
             n_obs = [1] * model.e
 
-            estimated_B = ut_lvcm.score._initialize_B(
+            estimated_B = utlvce.score._initialize_B(
                 model.A, sample_covariances, n_obs, init='obs')
             print(model.B)
             print(estimated_B)
@@ -1132,8 +1174,9 @@ class CacheTests(unittest.TestCase):
         for i in range(n):
             A = np.random.uniform(size=(p, p))
             I = set(sempler.generators.intervention_targets(p, 1, p)[0])
+            model = sample_model(p, set(range(p)), 5, 2,
+                                 0.5, 0.6, 0.7, 0.7, random_state=i)
             score = np.random.uniform()
-            model = "test"
             models.append((A, I, model, score))
             self.assertIsNone(cache.read(A, I))
             self.assertIsNone(cache._find(A, I))
@@ -1142,7 +1185,7 @@ class CacheTests(unittest.TestCase):
         # Test reading, and that writing the same model with
         # check=True raises a ValueError
         for (A, I, model, score) in models:
-            self.assertEqual((model, score), cache.read(A, I))
+            self.assertEqual(score, cache.read(A, I)[1])
             try:
                 cache.write(A, I, model, score, check=True)
                 self.fail()

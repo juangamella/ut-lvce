@@ -33,32 +33,8 @@
 
 import unittest
 import numpy as np
-import ut_lvcm.experiments as experiments
-import ut_lvcm.main
+import utlvce.experiments as experiments
+import utlvce.main
 
 # ---------------------------------------------------------------------
 # Tests for the scree selection procedure
-
-
-class ScreeSelectionTests(unittest.TestCase):
-
-    def test_chain_graph(self):
-        # See (scree_selection_debugging notebook)
-        # Chain graph
-        p = 50
-        B_lo, B_hi = 0.6, 0.7
-        h = 3
-        e = 5
-        var_lo, var_hi = 0.5, 0.6
-        i_var_lo, i_var_hi = 6, 12
-        psi_lo, psi_hi = 8, 8
-        I = {0, 1}
-        n = 1000
-        model = experiments.chain_graph(p, I, h, e, var_lo, var_hi,
-                                        i_var_lo, i_var_hi, psi_lo, psi_hi, B_lo, B_hi)
-        XX, sc, _ = model.sample(n, random_state=42)
-        covariance = np.cov(XX[0], rowvar=False)
-
-        selected = ut_lvcm.main._scree_selection(covariance)
-
-        self.assertEqual(3, selected)

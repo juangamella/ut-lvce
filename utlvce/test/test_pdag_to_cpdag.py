@@ -36,7 +36,7 @@ import numpy as np
 import sempler
 import sempler.generators
 
-import ut_lvcm.utils as utils
+import utlvce.utils as utils
 
 # ---------------------------------------------------------------------
 
@@ -117,14 +117,16 @@ class PDAG_to_CPDAG_Tests(unittest.TestCase):
             cpdag = utils.dag_to_cpdag(A)
             self.assertTrue(utils.is_consistent_extension(A, cpdag))
             extension = utils.pdag_to_dag(cpdag, debug=False)
-            is_consistent_extension = utils.is_consistent_extension(extension, cpdag)
+            is_consistent_extension = utils.is_consistent_extension(
+                extension, cpdag)
             if not is_consistent_extension:
                 print("DAG\n", A)
                 print("CPDAG\n", cpdag)
                 print("Extension\n", extension)
                 utils.is_consistent_extension(extension, cpdag, debug=True)
                 # Rerun with outputs
-                assert (extension == utils.pdag_to_dag(cpdag, debug=True)).all()
+                assert (extension == utils.pdag_to_dag(
+                    cpdag, debug=True)).all()
                 self.assertTrue(is_consistent_extension)
         print("\nChecked PDAG to DAG conversion for %d PDAGs" % (i + 1))
 
@@ -169,7 +171,8 @@ class PDAG_to_CPDAG_Tests(unittest.TestCase):
             A = sempler.generators.dag_avg_deg(p, 3, 1, 1)
             ordered = utils.order_edges(A)
             no_edges = (A != 0).sum()
-            self.assertEqual(sorted(ordered[ordered != 0]), list(range(1, no_edges + 1)))
+            self.assertEqual(sorted(ordered[ordered != 0]), list(
+                range(1, no_edges + 1)))
         print("\nChecked valid ordering for %d DAGs" % (i + 1))
 
     def test_label_edges_preconditions(self):

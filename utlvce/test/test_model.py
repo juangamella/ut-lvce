@@ -35,7 +35,7 @@ import unittest
 import numpy as np
 
 # Tested functions
-from ut_lvcm import Model
+from utlvce import Model
 
 
 class TestModel(unittest.TestCase):
@@ -110,7 +110,8 @@ class TestModel(unittest.TestCase):
     def test_covariances_1(self):
         """Test model.covariances: here, that the dimensions are correct"""
         covariances = self.model.covariances()
-        self.assertEqual((self.model.e, self.model.p, self.model.p), covariances.shape)
+        self.assertEqual((self.model.e, self.model.p,
+                         self.model.p), covariances.shape)
 
     def test_covariances_2(self):
         """Test model.covariances: here, that for an latent matrix of zeros,
@@ -182,7 +183,8 @@ class TestModel(unittest.TestCase):
         # Sample (constant sample size)
         n = 123
         X, sample_covariances, n_obs = self.model.sample(n, True)
-        self.assertEqual((self.model.e, self.model.p, self.model.p), sample_covariances.shape)
+        self.assertEqual((self.model.e, self.model.p,
+                         self.model.p), sample_covariances.shape)
         self.assertEqual([n] * self.model.e, n_obs)
         self.assertEqual(self.model.e, len(X))
         for x in X:
@@ -191,7 +193,8 @@ class TestModel(unittest.TestCase):
         # Sample
         n = [12, 34, 541, 123, 56]
         X, sample_covariances, n_obs = self.model.sample(n, True)
-        self.assertEqual((self.model.e, self.model.p, self.model.p), sample_covariances.shape)
+        self.assertEqual((self.model.e, self.model.p,
+                         self.model.p), sample_covariances.shape)
         self.assertEqual(n, n_obs)
         self.assertEqual(self.model.e, len(X))
         for i, x in enumerate(X):

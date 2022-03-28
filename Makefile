@@ -29,7 +29,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 SUITE = all
-PROJECT = ut_lvcm
+PROJECT = utlvce
 
 # Run tests
 tests: test examples doctests
