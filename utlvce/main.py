@@ -32,9 +32,9 @@
 """
 
 import numpy as np
-import ut_lvcm.utils as utils
-from ut_lvcm.score import Score
-import ut_lvcm
+import utlvce.utils as utils
+from utlvce.score import Score
+import utlvce
 import gc  # Garbage collector
 
 # TODO
@@ -77,7 +77,7 @@ def fit(data, psi_max, psi_fixed, max_iter, threshold_dist_B, threshold_fluctuat
         # Run GES on pooled training data or only a particular environment
         ges_data = training_data if ges_env is None else [
             training_data[ges_env]]
-        initial_graphs = ut_lvcm.ges.fit(
+        initial_graphs = utlvce.ges.fit(
             ges_data, phases=ges_phases, lambdas=ges_lambdas, verbose=1)
 
     print("No. edges in initial graphs (%d)" % len(initial_graphs), [np.sum(A)

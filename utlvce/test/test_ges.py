@@ -31,11 +31,11 @@
 """
 """
 
-from ut_lvcm.model import Model
+from utlvce.model import Model
 import unittest
 import numpy as np
 import sempler.generators
-import ut_lvcm.ges as ges
+import utlvce.ges as ges
 import time
 
 NUM_GRAPHS = 10
@@ -45,7 +45,8 @@ NUM_GRAPHS = 10
 
 def sample_model(p, I, num_latent, e, var_lo, var_hi, B_lo, B_hi, random_state=42, verbose=0):
     rng = np.random.default_rng(random_state)
-    B = sempler.generators.dag_avg_deg(p, 2.5, B_lo, B_hi, random_state=random_state)
+    B = sempler.generators.dag_avg_deg(
+        p, 2.5, B_lo, B_hi, random_state=random_state)
     A = (B != 0).astype(int)
     gamma = rng.normal(0, 1 / np.sqrt(p), size=(num_latent, p))
     omegas = rng.uniform(var_hi * 1.5, var_hi * 3, size=(e, p))
@@ -75,7 +76,8 @@ class TestGES(unittest.TestCase):
         print("Testing GES")
         for i in range(G):
             # Sample intervention targets
-            true_I = set(sempler.generators.intervention_targets(p, 1, size_I, random_state=i)[0])
+            true_I = set(sempler.generators.intervention_targets(
+                p, 1, size_I, random_state=i)[0])
             print("\nGraph %d - I = %s" % (i, true_I))
             # Build model
             model = sample_model(p, true_I, num_latent, e, var_lo,

@@ -40,8 +40,8 @@ import itertools
 import networkx as nx
 import time
 
-import ut_lvcm.utils as utils
-import ut_lvcm.experiments as experiments
+import utlvce.utils as utils
+import utlvce.experiments as experiments
 # ---------------------------------------------------------------------
 # Tests
 
@@ -426,7 +426,8 @@ class UtilsTests(unittest.TestCase):
                           [0, 0, 1, 0]])
         self.assertTrue((utils.only_undirected(A) == truth).all())
         # Undirected and directed should be disjoint
-        union = np.logical_xor(utils.only_directed(A), utils.only_undirected(A))
+        union = np.logical_xor(utils.only_directed(A),
+                               utils.only_undirected(A))
         self.assertTrue((union == A).all())
 
     def test_vstructures(self):
@@ -664,7 +665,8 @@ class UtilsTests(unittest.TestCase):
             for j in range(p):
                 chain_component = utils.chain_component(j, cpdag)
                 for h in chain_component:
-                    self.assertEqual(chain_component, utils.chain_component(h, cpdag))
+                    self.assertEqual(
+                        chain_component, utils.chain_component(h, cpdag))
 
     def test_chain_component_4(self):
         # Check that in a directed graph, the chain component of each
@@ -687,10 +689,12 @@ class UtilsTests(unittest.TestCase):
             A = sempler.generators.dag_avg_deg(p, 3, 1, 1)
             G = utils.dag_to_cpdag(A)
             # Test 1
-            self.assertTrue((np.zeros_like(G) == utils.induced_subgraph(set(), G)).all())
+            self.assertTrue(
+                (np.zeros_like(G) == utils.induced_subgraph(set(), G)).all())
             # Test 2
             for _ in range(10):
-                S = set(np.random.choice(range(p), size=np.random.randint(0, p)))
+                S = set(np.random.choice(
+                    range(p), size=np.random.randint(0, p)))
                 truth = G.copy()
                 Sc = set(range(p)) - S
                 truth[list(Sc), :] = 0
@@ -705,7 +709,8 @@ class UtilsTests(unittest.TestCase):
                       [0, 0, 1, 0, 0]])
         # Test 0: Sets which return a graph with no edges
         for S in [set(), {0}, {1}, {2}, {3}, {4}, {0, 1}, {0, 3}, {0, 4}, {3, 4}, {1, 3}, {1, 4}]:
-            self.assertTrue((np.zeros_like(G) == utils.induced_subgraph(S, G)).all())
+            self.assertTrue(
+                (np.zeros_like(G) == utils.induced_subgraph(S, G)).all())
             # Test 1
         S = {0, 1, 2}
         truth = np.array([[0, 0, 1, 0, 0],
@@ -811,7 +816,8 @@ class UtilsTests(unittest.TestCase):
                     # Check consistency
                     for dag in dags:
                         self.assertTrue(utils.is_dag(dag))
-                        self.assertTrue(utils.is_consistent_extension(dag, pdag))
+                        self.assertTrue(
+                            utils.is_consistent_extension(dag, pdag))
                         # Check number of edges
                     no_edges = np.sum(dags, axis=(1, 2))
                     expected_no_edges = utils.only_directed(
@@ -819,7 +825,8 @@ class UtilsTests(unittest.TestCase):
                     self.assertTrue((no_edges == expected_no_edges).all())
                 except ValueError:
                     self.assertEqual(len(dags), 0)
-                    print("Checked enumeration size and consistency for %d PDAGS" % ((i + 1) * 2))
+                    print("Checked enumeration size and consistency for %d PDAGS" % (
+                        (i + 1) * 2))
 
     # Causaldag implementation is wrong(see notebook example), decided
     # not to test against it
@@ -966,7 +973,8 @@ class UtilsTests(unittest.TestCase):
         for i in range(G):
             A = sempler.generators.dag_avg_deg(p, 2.5, random_state=i)
             cpdag = utils.dag_to_cpdag(A)
-            self.assertTrue((utils.moral_graph(A) == utils.moral_graph(cpdag)).all())
+            self.assertTrue(
+                (utils.moral_graph(A) == utils.moral_graph(cpdag)).all())
 
     def test_moral_graph_2(self):
         """Test moralization of basic X -> Y <- Z"""
@@ -1155,7 +1163,8 @@ class UtilsTests(unittest.TestCase):
                 # connected graph
                 can_add = int(p * (p - 1) / 2 - A.sum())
                 supergraph = utils.add_edges(A, can_add)
-                self.assertTrue((np.ones_like(A) - np.eye(p) == utils.skeleton(supergraph)).all())
+                self.assertTrue((np.ones_like(A) - np.eye(p) ==
+                                utils.skeleton(supergraph)).all())
                 # Check that error is returned when attempting to add more
                 # edges than is possible
                 try:

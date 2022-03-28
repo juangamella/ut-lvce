@@ -36,7 +36,7 @@ import numpy as np
 import ges
 import ges.scores
 import time
-import ut_lvcm.utils as utils
+import utlvce.utils as utils
 # import pandas as pd
 # import networkx as nx
 # from cdt.causality.graph import GES
@@ -80,7 +80,8 @@ def fit(data, verbose=1, lambdas=None, phases=None):
         # Run GES
         cpdag = ges.fit(score_class, phases=phases, iterate=True)[0]
         graphs += list(utils.all_dags(cpdag))
-        print("  done (%0.2f seconds)" % (time.time() - start)) if verbose > 0 else None
+        print("  done (%0.2f seconds)" %
+              (time.time() - start)) if verbose > 0 else None
     return np.array(graphs)
 
     # if lib == 'cdt':

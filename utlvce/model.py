@@ -32,7 +32,7 @@
 """
 
 import numpy as np
-import ut_lvcm.utils as utils
+import utlvce.utils as utils
 
 # --------------------------------------------------------------------
 # Model class which represents the model, its parameters and additional variables

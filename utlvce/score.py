@@ -32,8 +32,8 @@
 """
 
 import numpy as np
-import ut_lvcm.utils as utils
-from ut_lvcm.model import Model
+import utlvce.utils as utils
+from utlvce.model import Model
 import cvxpy as cp
 import scipy.linalg
 import copy
@@ -83,7 +83,8 @@ class _Cache():
                 index = A_indices[I_index]
                 return index
             else:
-                raise Exception("Cache should contain only unique (A,I) entries")
+                raise Exception(
+                    "Cache should contain only unique (A,I) entries")
 
     def read(self, A, I):
         """Return the cached score of an adjacency + intervention targets, or
@@ -101,7 +102,7 @@ class _Cache():
         else:
             self._As.append(A.copy())
             self._Is.append(I.copy())
-            self._scores.append(score.copy())
+            self._scores.append(score)
             self._models.append(model.copy())
 
 
@@ -151,7 +152,8 @@ class Score():
             self.sample_covariances = data[0].copy()
             self.n_obs = copy.deepcopy(data[1])
         else:
-            self.sample_covariances = np.array([np.cov(X, rowvar=False) for X in data])
+            self.sample_covariances = np.array(
+                [np.cov(X, rowvar=False) for X in data])
             self.n_obs = [len(X) for X in data]
         # Start cache
         self.cache = _Cache() if cache else None
@@ -187,7 +189,7 @@ class Score():
             between environments.
         init_model: Model(), default = None
             To set a set of parameters, encoded by an instance of
-            ut_lvcm.model.Model as the starting point of the procedure.
+            utlvce.model.Model as the starting point of the procedure.
         verbose: int, default = 0
             If debug and execution traces should be printed. `0`
             corresponds to no traces, higher values correspond to higher
@@ -223,18 +225,22 @@ class Score():
         # Initialization
 
         if init_model is not None and not (init_model.A == A).all():
-            raise ValueError('model_init.A does not correspond to the given adjacency matrix A.')
+            raise ValueError(
+                'model_init.A does not correspond to the given adjacency matrix A.')
         elif init_model is not None:
             model = init_model
         else:
             # Initialize B (connectivity matrix)
             B = _initialize_B(A, self.sample_covariances, self.n_obs)
             # Initialize gamma (connectivity matrix latents -> observed)
-            gamma = _initialize_gamma(B, self.num_latent, self.sample_covariances, self.n_obs)
+            gamma = _initialize_gamma(
+                B, self.num_latent, self.sample_covariances, self.n_obs)
             # Initialize omegas (noise term variances of observed variables)
-            omegas = _initialize_omegas(B, I, self.sample_covariances, self.n_obs)
+            omegas = _initialize_omegas(
+                B, I, self.sample_covariances, self.n_obs)
             # Initialize psis (variances of the latent variables)
-            psis = _initialize_psis(len(self.sample_covariances), self.num_latent)
+            psis = _initialize_psis(
+                len(self.sample_covariances), self.num_latent)
             model = Model(A, B, gamma, omegas, psis)
 
         if verbose > 0:
@@ -259,7 +265,8 @@ class Score():
             current_model = previous_model.copy()
 
             # Solve for B
-            new_B = self.B_solver(current_model, self.sample_covariances, self.n_obs)
+            new_B = self.B_solver(
+                current_model, self.sample_covariances, self.n_obs)
             current_model.B = new_B
             print(' ' * 4, 'Solved for B') if verbose > 0 else None
             print(current_model.B) if verbose > 1 else None
@@ -285,12 +292,15 @@ class Score():
                                                                        self.learning_rate,
                                                                        verbose=max(0, verbose - 1))
             print(' ' * 4, 'Solved for omegas, psis') if verbose > 0 else None
-            print(current_model.omegas, current_model.psis) if verbose > 1 else None
+            print(current_model.omegas,
+                  current_model.psis) if verbose > 1 else None
 
             # Compute stopping conditions
             i += 1
-            dist_B = abs(previous_model.B - current_model.B).max()  # L-infinity
-            current_score = current_model.score(self.sample_covariances, self.n_obs)
+            dist_B = abs(previous_model.B -
+                         current_model.B).max()  # L-infinity
+            current_score = current_model.score(
+                self.sample_covariances, self.n_obs)
             if current_score - previous_score > self.threshold_fluctuation:
                 fluc_counter += 1
 
@@ -370,7 +380,8 @@ def _solve_for_B_grad(model, sample_covariances, n_obs, debug=False):
 def _solve_for_B_adaptive(model, sample_covariances, n_obs, debug=False):
     # Loss (likelihood) function that we will use to adapt the learning rate
     def likelihood(B_flattened):
-        B = np.eye(model.p) - B_flattened.reshape((model.p, model.p), order='F')
+        B = np.eye(model.p) - \
+            B_flattened.reshape((model.p, model.p), order='F')
         B = B.T
         new_model = Model(model.A, B, model.gamma, model.omegas, model.psis)
         return new_model.score(sample_covariances, n_obs)
@@ -399,16 +410,19 @@ def _solve_for_B_adaptive(model, sample_covariances, n_obs, debug=False):
         # Adapt learning rate if new score is worse
         if next_score > current_score:
             learn_rate /= 2
-            print("  Adjusting learning rate to %s" % learn_rate) if debug else None
+            print("  Adjusting learning rate to %s" %
+                  learn_rate) if debug else None
             continue
         # Compute stopping condition
-        print("Dist=", abs(current_B - next_B).max(), "Score=", next_score) if debug else None
+        print("Dist=", abs(current_B - next_B).max(),
+              "Score=", next_score) if debug else None
         if abs(current_B - next_B).max() < 1e-5:
             break
         else:
             current_B, current_score = next_B, next_score
     # Unflatten B and return
-    final_B = np.eye(model.p) - current_B.reshape((model.p, model.p), order='F')
+    final_B = np.eye(model.p) - \
+        current_B.reshape((model.p, model.p), order='F')
     assert np.isfinite(final_B).all()
     return final_B.T
 
@@ -537,7 +551,8 @@ def _solve_for_gamma(model, sample_covariances, n_obs, threshold_score, learning
                     # assert T[k,k] == gamma[l,k] * model.psis[h]
                     T = T + T.T
                     # Compute this environment's contribution
-                    gradient_lk += n_obs[h] * (np.trace(M @ T) - np.trace(M @ N @ M @ T))
+                    gradient_lk += n_obs[h] * \
+                        (np.trace(M @ T) - np.trace(M @ N @ M @ T))
                 gradient_lk /= sum(n_obs)
                 # Finish by storing this component's gradient
                 gradient[l, k] = gradient_lk
@@ -615,7 +630,8 @@ def _solve_for_rest(model, I, sample_covariances, n_obs, psi_max, psi_fixed, thr
         gradient_psis = np.zeros_like(psis)
         for h, (M, N) in enumerate(zip(Ms, Ns)):
             # Gradient for omegas
-            gradient_omegas[h, :] = n_obs[h] / sum(n_obs) * np.diag(M - M @ N @ M)
+            gradient_omegas[h, :] = n_obs[h] / \
+                sum(n_obs) * np.diag(M - M @ N @ M)
             # Gradient for psis (compute for each element)
             for k in range(model.num_latent):
                 T = np.zeros((model.p, model.p), dtype=float)
@@ -991,7 +1007,8 @@ def _gradient_descent(loss_fun, gradient_fun, X_init, threshold_loss, learning_r
 
     # Check inputs: X_init
     if bounds is not None and not _is_within_bounds(X_init, bounds):
-        raise ValueError("Some elements of X_init are outside the required bounds.")
+        raise ValueError(
+            "Some elements of X_init are outside the required bounds.")
 
     current_X = X_init
     current_loss = loss_fun(current_X)
@@ -1025,7 +1042,8 @@ def _gradient_descent(loss_fun, gradient_fun, X_init, threshold_loss, learning_r
         #     new_X = bounded_X
 
         if bounds is not None and not _is_within_bounds(new_X, bounds):
-            print("WARNING: elements in X are outside their bounds") if verbose > 0 else None
+            print(
+                "WARNING: elements in X are outside their bounds") if verbose > 0 else None
             kappa /= 2
             moved = False
             continue
@@ -1038,7 +1056,8 @@ def _gradient_descent(loss_fun, gradient_fun, X_init, threshold_loss, learning_r
         # Option 1: Score improves below threshold; end gradient
         # descent
         if new_loss < current_loss and abs(new_loss - current_loss) < threshold_loss:
-            print("      Loss improved below threshold; stopping.") if verbose > 1 else None
+            print(
+                "      Loss improved below threshold; stopping.") if verbose > 1 else None
             return new_X, new_loss
         # Option 2: Score improves above threshold; continue
         # gradient descent
@@ -1056,7 +1075,8 @@ def _gradient_descent(loss_fun, gradient_fun, X_init, threshold_loss, learning_r
         # kappa) and repeat
         else:
             moved = False
-            print("      Loss did not improve; reducing learning rate.") if verbose > 1 else None
+            print(
+                "      Loss did not improve; reducing learning rate.") if verbose > 1 else None
             kappa /= 2
 
 
