@@ -35,7 +35,7 @@ from utlvce.model import Model
 import unittest
 import numpy as np
 import sempler.generators
-import utlvce.ges as ges
+import utlvce.ges
 import time
 
 NUM_GRAPHS = 10
@@ -86,5 +86,5 @@ class TestGES(unittest.TestCase):
             # Run GES
             print("Running GES...", end="")
             start = time.time()
-            ges.fit(X)
+            utlvce.ges.fit(X)
             print("done (%0.2f seconds)" % (time.time() - start))

@@ -747,7 +747,7 @@ def _initialize_gamma(B, num_latent, sample_covariances, n_obs, init='avg'):
     ----------
     B : numpy.ndarray
         The connectivity matrix between observed variables, where
-        B[i,j] != 0 => i -> j.
+        `B[i,j] != 0 => i -> j`.
     num_latent : int
        The assumed number of hidden variables.
     sample_covariances : numpy.ndarray
@@ -777,17 +777,18 @@ def _initialize_gamma(B, num_latent, sample_covariances, n_obs, init='avg'):
     -------
 
     >>> _initialize_gamma(B, 3, sample_covariances, n_obs, 'obs')
-    array([[-0.00624498,  0.00559699,  0.0068256 ],
-           [-0.01088502,  0.01425682,  1.20568705],
-           [-0.00803778,  1.22675101, -0.01410495],
-           [-1.31568027, -0.00763901, -0.00992124]])
+    array([[-0.00624498, -0.01088502, -0.00803778, -1.31568027],
+           [ 0.00559699,  0.01425682,  1.22675101, -0.00763901],
+           [ 0.0068256 ,  1.20568705, -0.01410495, -0.00992124]])
 
 
     >>> _initialize_gamma(B, 3, sample_covariances, n_obs, 'avg')
-    array([[ 2.59412474e-05, -2.36602469e-04, -1.09771216e-02],
-           [ 1.64447527e+00,  1.14426317e-03, -7.73792530e-04],
-           [-1.03597867e-03, -1.85525853e-03, -1.22655061e+00],
-           [-1.31391844e-03,  1.43359610e+00, -1.58850898e-03]])
+    array([[ 2.59412474e-05,  1.64447527e+00, -1.03597867e-03,
+            -1.31391844e-03],
+           [-2.36602469e-04,  1.14426317e-03, -1.85525853e-03,
+             1.43359610e+00],
+           [-1.09771216e-02, -7.73792530e-04, -1.22655061e+00,
+            -1.58850898e-03]])
 
 
     >>> _initialize_gamma(B, 3, sample_covariances, n_obs, 'test')

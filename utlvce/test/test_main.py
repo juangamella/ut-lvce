@@ -33,7 +33,6 @@
 
 import unittest
 import numpy as np
-import utlvce.experiments as experiments
 import utlvce.main
 
 # ---------------------------------------------------------------------

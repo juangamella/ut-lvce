@@ -41,7 +41,7 @@ import networkx as nx
 import time
 
 import utlvce.utils as utils
-import utlvce.experiments as experiments
+import utlvce.generators
 # ---------------------------------------------------------------------
 # Tests
 
@@ -1026,20 +1026,22 @@ class UtilsTests(unittest.TestCase):
     def test_split_data_2(self):
         """Check that when splitting the data, each fold actually ends up with
         different observations"""
-        model = experiments.sample_model(p=4,
-                                         k=2.5,
-                                         I={1, 2, 3},
-                                         num_latent=2,
-                                         e=2,
-                                         var_lo=3,
-                                         var_hi=4,
-                                         int_var_lo=6,
-                                         int_var_hi=10,
-                                         psi_lo=1,
-                                         psi_hi=2,
-                                         B_lo=4,
-                                         B_hi=5,
-                                         random_state=21)
+        model = utlvce.generators.random_graph_model(p=4,
+                                                     k=2.5,
+                                                     I={1, 2, 3},
+                                                     num_latent=2,
+                                                     e=2,
+                                                     var_lo=3,
+                                                     var_hi=4,
+                                                     int_var_lo=6,
+                                                     int_var_hi=10,
+                                                     psi_lo=1,
+                                                     psi_hi=2,
+                                                     int_psi_lo=0,
+                                                     int_psi_hi=0,
+                                                     B_lo=4,
+                                                     B_hi=5,
+                                                     random_state=21)
         data = model.sample(20, False, random_state=21)
         [fold_1, fold_2] = utils.split_data(data, ratios=[0.5, 0.5])
         flattened_1 = np.array(fold_1).flatten()
@@ -1049,20 +1051,22 @@ class UtilsTests(unittest.TestCase):
     def test_split_data_3(self):
         """Check that when splitting the data, each fold actually ends up with
         different observations"""
-        model = experiments.sample_model(p=4,
-                                         k=2.5,
-                                         I={1, 2, 3},
-                                         num_latent=2,
-                                         e=2,
-                                         var_lo=3,
-                                         var_hi=4,
-                                         int_var_lo=6,
-                                         int_var_hi=10,
-                                         psi_lo=1,
-                                         psi_hi=2,
-                                         B_lo=4,
-                                         B_hi=5,
-                                         random_state=21)
+        model = utlvce.generators.random_graph_model(p=4,
+                                                     k=2.5,
+                                                     I={1, 2, 3},
+                                                     num_latent=2,
+                                                     e=2,
+                                                     var_lo=3,
+                                                     var_hi=4,
+                                                     int_var_lo=6,
+                                                     int_var_hi=10,
+                                                     psi_lo=1,
+                                                     psi_hi=2,
+                                                     int_psi_lo=0,
+                                                     int_psi_hi=0,
+                                                     B_lo=4,
+                                                     B_hi=5,
+                                                     random_state=21)
         n = 99
         # Check that all datapoints are contained in one of the folds
         data = model.sample(n, False, random_state=21)

@@ -43,13 +43,14 @@ endif
 
 # Run the example scripts in the README
 examples:
-	PYTHONPATH=./ python3 docs/template_example.py
+	PYTHONPATH=./ python3 docs/example.py
 
 # Run the doctests
 doctests:
 	PYTHONPATH=./ python3 $(PROJECT)/main.py
 	PYTHONPATH=./ python3 $(PROJECT)/score.py
 	PYTHONPATH=./ python3 $(PROJECT)/model.py
+	PYTHONPATH=./ python3 $(PROJECT)/generators.py
 
 # Set up virtual environment
 venv:

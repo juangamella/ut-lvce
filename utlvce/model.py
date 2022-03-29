@@ -342,7 +342,7 @@ class Model():
             The number of observations to generate from each
             environment. If a single number is passed, generate this
             number of observations for all environments.
-        sample_covariances : bool, default=True
+        compute_sample_covariances : bool, default=True
             If additionally the sample_covariances for the generated
             samples should be computed.
 
@@ -363,8 +363,11 @@ class Model():
         Raises
         ------
         ValueError :
-            If the values passed for n_obs are not positive or the
-            length of n_obs does not match the number of environments.
+            If the values passed for n_obs are not positive, the
+            length of n_obs does not match the number of environments,
+            or `sample_covariances=True` but we are sampling a single
+            observation from any of the environments (i.e. covariance
+            matrix cannot be computed).
         TypeError :
            If n_obs is not a list of integers.
 
@@ -373,9 +376,11 @@ class Model():
 
         >>> _ = model.sample(10)
 
+        >>> _ = model.sample(1, compute_sample_covariances=False)
+
         >>> _ = model.sample(10, False)
 
-        >>> _ = model.sample([1,2,3,4,5])
+        >>> _ = model.sample([2,3,4,5,6])
 
         >>> model.sample([1,2])
         Traceback (most recent call last):
@@ -397,6 +402,16 @@ class Model():
         ...
         ValueError: n_obs should be a positive integer or list of positive integers.
 
+        >>> model.sample(1, compute_sample_covariances=True)
+        Traceback (most recent call last):
+        ...
+        ValueError: Cannot compute sample covariances for a single observation.
+
+        >>> model.sample([1,2,3,4,5])
+        Traceback (most recent call last):
+        ...
+        ValueError: Cannot compute sample covariances for a single observation.
+
         >>> model.sample([1.0,2,3,4,5])
         Traceback (most recent call last):
         ...
@@ -412,7 +427,10 @@ class Model():
         msg = 'n_obs should be a positive integer or list of positive integers.'
         #   if single int
         if isinstance(n_obs, int):
-            if n_obs > 0:
+            if compute_sample_covariances and n_obs == 1:
+                raise ValueError(
+                    "Cannot compute sample covariances for a single observation.")
+            elif n_obs > 0:
                 n_obs = [n_obs] * self.e
             else:
                 raise ValueError(msg)
@@ -425,6 +443,9 @@ class Model():
                     raise TypeError(msg)
                 elif n <= 0:
                     raise ValueError(msg)
+                elif n == 1 and compute_sample_covariances:
+                    raise ValueError(
+                        "Cannot compute sample covariances for a single observation.")
                 #   anything else is a wrong type
         else:
             raise TypeError(msg)

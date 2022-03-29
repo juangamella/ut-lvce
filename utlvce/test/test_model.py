@@ -204,7 +204,7 @@ class TestModel(unittest.TestCase):
         """Test model.sample: here, test that for a very large sample size the
         population and sample covariances are close"""
         n = int(1e7)
-        _, sample_covariances, n_obs = self.model.sample(n, True)
+        sample_covariances = self.model.sample(n, True, random_state=1)[1]
         pop_covariances = self.model.covariances()
         # print(pop_covariances)
         # print(sample_covariances)
