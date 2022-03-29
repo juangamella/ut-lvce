@@ -89,11 +89,3 @@ def fit(data, verbose=1, lambdas=None, phases=None):
         print("  done (%0.2f seconds)" %
               (time.time() - start)) if verbose > 0 else None
     return np.array(graphs)
-
-    # if lib == 'cdt':
-    #     output = GES(verbose=verbose).predict(pd.DataFrame(pooled_data))
-    #     result = nx.to_numpy_array(output)
-    # elif lib == 'ges':
-    #     result = ges.fit_bic(pooled_data)[0]
-    # print("done (%0.2f seconds)" % (time.time() - start)) if verbose > 0 else None
-    # return result

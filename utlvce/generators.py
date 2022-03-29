@@ -34,8 +34,6 @@ This module contains functions to generate random models from fixed or random DA
 
 
 import numpy as np
-import sempler
-import sempler.generators
 from utlvce.model import Model
 import utlvce.utils as utils
 
@@ -258,7 +256,7 @@ def random_graph_model(p,
     --------
     >>> model = random_graph_model(20,2.1,{2},2,5,0.5,0.6,3,6,0.2,0.4,1,5,0.7,0.8,False,True,42,0)
     """
-    A = sempler.generators.dag_avg_deg(p, k, random_state=random_state)
+    A = _dag_avg_deg(p, k, random_state=random_state)
     return sample_parameters(A,
                              I,
                              num_latent,
@@ -516,6 +514,76 @@ def intervention_targets(p, num_targets, random_state=42):
 
 def spectral_norm(X):
     return np.linalg.norm(X, ord=2)
+
+
+def _dag_avg_deg(p, k, w_min=1, w_max=1, return_ordering=False, random_state=None, debug=False):
+    """Generate an Erdos-Renyi graph with p nodes and average degree k,
+    and orient edges according to a random ordering. Sample the edge
+    weights from a uniform distribution. (NOTE: this function is a
+    copy from the sempler package, i.e. sempler.generators.dag_avg_deg)
+
+    Parameters
+    ----------
+    p : int
+        The number of nodes in the graph.
+    k : float
+        The desired average degree.
+    w_min : float, optional
+        The lower bound on the sampled weights. Defaults to 1.
+    w_max : float, optional
+        The upper bound on the sampled weights. Defaults to 1.
+    return_ordering: bool, optional
+        If the topological ordering used to orient the edges should be
+        returned.
+    random_state : int,optional
+        To set the random state for reproducibility.
+    debug : bool, optional
+        If debug traces should be printed.
+
+    Returns
+    -------
+    W : numpy.ndarray
+       The connectivity (weights) matrix of the generated DAG.
+    ordering : numpy.ndarray, optional
+       If return_ordering = True, a topological ordering of the graph.
+
+    Example
+    -------
+    >>> dag_avg_deg(5, 2, random_state = 42)
+    array([[0., 0., 0., 1., 0.],
+           [0., 0., 1., 1., 0.],
+           [0., 0., 0., 1., 0.],
+           [0., 0., 0., 0., 0.],
+           [0., 0., 0., 0., 0.]])
+
+    Optionally, the ordering used to orient the edges can be returned
+
+    >>> dag_avg_deg(5, 2, return_ordering = True, random_state = 42)
+    (array([[0., 0., 0., 1., 0.],
+           [0., 0., 1., 1., 0.],
+           [0., 0., 0., 1., 0.],
+           [0., 0., 0., 0., 0.],
+           [0., 0., 0., 0., 0.]]), array([0, 4, 1, 2, 3]))
+
+    """
+    np.random.seed(random_state) if random_state is not None else None
+    # Generate adjacency matrix as if top. ordering is 1..p
+    prob = k / (p-1)
+    print("p = %d, k = %0.2f, P = %0.4f" % (p, k, prob)) if debug else None
+    A = np.random.uniform(size=(p, p))
+    A = (A <= prob).astype(float)
+    A = np.triu(A, k=1)
+    weights = np.random.uniform(w_min, w_max, size=A.shape)
+    W = A * weights
+
+    # Permute rows/columns according to random topological ordering
+    permutation = np.random.permutation(p)
+    # Note the actual topological ordering is the "conjugate" of permutation eg. [3,1,2] -> [2,3,1]
+    print("avg degree = %0.2f" % (np.sum(A) * 2 / len(A))) if debug else None
+    if return_ordering:
+        return (W[permutation, :][:, permutation], np.argsort(permutation))
+    else:
+        return W[permutation, :][:, permutation]
 
 
 # --------------------------------------------------------------------

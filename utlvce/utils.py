@@ -37,9 +37,8 @@ algorithm described in Chickering's original GES paper from 2002.
 import numpy as np
 from functools import reduce
 import itertools
-
-# import matplotlib.pyplot as plt
 # import networkx as nx  # for d-separation
+# import matplotlib.pyplot as plt
 
 # --------------------------------------------------------------------
 # Statistical functions
