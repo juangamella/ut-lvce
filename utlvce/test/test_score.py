@@ -118,7 +118,7 @@ class ScoreDagTests(unittest.TestCase):
             model = sample_model(p, set(range(p)), num_latent, e, var_lo,
                                  var_hi, B_lo, B_hi, random_state=i)
             sample_covariances = model.covariances()
-            n_obs = [1] * model.e
+            n_obs = np.array([1] * model.e)
             pop_score = model.score(sample_covariances, n_obs)
 
             score_class = Score((sample_covariances, n_obs),
@@ -172,7 +172,7 @@ class ScoreDagTests(unittest.TestCase):
                                  var_hi, B_lo, B_hi, random_state=i)
             # print(model)
             sample_covariances = model.covariances()
-            n_obs = [1] * model.e
+            n_obs = np.array([1] * model.e)
             pop_score = model.score(sample_covariances, n_obs)
             start = time.time()
             score_class = Score((sample_covariances, n_obs),
@@ -231,7 +231,7 @@ class ScoreDagTests(unittest.TestCase):
                                  var_hi, B_lo, B_hi, random_state=i)
             # print(model)
             sample_covariances = model.covariances()
-            n_obs = [1] * model.e
+            n_obs = np.array([1] * model.e)
             pop_score = model.score(sample_covariances, n_obs)
 
             score_class = Score((sample_covariances, n_obs),
@@ -580,7 +580,7 @@ class ScoreDagTests(unittest.TestCase):
             model = sample_model(p, true_I, num_latent, e, var_lo,
                                  var_hi, B_lo, B_hi, random_state=i)
             sample_covariances = model.covariances()
-            n_obs = [1] * model.e
+            n_obs = np.array([1] * model.e)
             pop_score = model.score(sample_covariances, n_obs)
             # Get equivalent DAGs
             icpdag = utils.dag_to_icpdag(model.A, true_I)
@@ -766,7 +766,7 @@ class BSolverTests(unittest.TestCase):
             model = sample_model(p, set(range(p)), num_latent, e, var_lo,
                                  var_hi, B_lo, B_hi, random_state=i)
             sample_covariances = model.covariances()
-            n_obs = [1] * model.e
+            n_obs = np.array([1] * model.e)
             #_, sample_covariances, n_obs = model.sample(10000)
 
             estimated_B = utlvce.score._solve_for_B_cvx(
@@ -849,7 +849,7 @@ class GradientDescentTests(unittest.TestCase):
                                  var_hi, B_lo, B_hi, random_state=i)
 
             sample_covariances = model.covariances()
-            n_obs = [1] * model.e
+            n_obs = np.array([1] * model.e)
 
             # Solve for gamma with the population gamma as starting point
             estimated_gamma = utlvce.score._solve_for_gamma(
@@ -904,7 +904,7 @@ class GradientDescentTests(unittest.TestCase):
                                  var_hi, B_lo, B_hi, random_state=i)
 
             sample_covariances = model.covariances()
-            n_obs = [1] * model.e
+            n_obs = np.array([1] * model.e)
 
             # Solve for gamma with a perturbed population gamma as starting point
             model_init = model.copy()
@@ -958,7 +958,7 @@ class GradientDescentTests(unittest.TestCase):
                                  var_hi, B_lo, B_hi, random_state=i)
 
             sample_covariances = model.covariances()
-            n_obs = [1] * model.e
+            n_obs = np.array([1] * model.e)
 
             # Solve for omegas/psis with their population values as starting point
             psi_max = 2
@@ -1023,7 +1023,7 @@ class GradientDescentTests(unittest.TestCase):
                                  var_hi, B_lo, B_hi, random_state=i)
 
             sample_covariances = model.covariances()
-            n_obs = [1] * model.e
+            n_obs = np.array([1] * model.e)
 
             # Solve for gamma with a perturbed population gamma as starting point
             model_init = model.copy()
@@ -1131,7 +1131,7 @@ class IntializationTests(unittest.TestCase):
                                  var_hi, B_lo, B_hi, random_state=i)
             model.gamma = np.zeros_like(model.gamma)
             sample_covariances = model.covariances()
-            n_obs = [1] * model.e
+            n_obs = np.array([1] * model.e)
 
             estimated_B = utlvce.score._initialize_B(
                 model.A, sample_covariances, n_obs, init='obs')
@@ -1156,7 +1156,7 @@ class IntializationTests(unittest.TestCase):
             model = sample_model(p, set(range(p)), num_latent, e, var_lo,
                                  var_hi, B_lo, B_hi, random_state=i)
             sample_covariances = model.covariances()
-            n_obs = [1] * model.e
+            n_obs = np.array([1] * model.e)
 
             estimated_B = utlvce.score._initialize_B(
                 model.A, sample_covariances, n_obs, init='obs')

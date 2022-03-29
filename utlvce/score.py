@@ -38,17 +38,15 @@ import cvxpy as cp
 import scipy.linalg
 import copy
 import time
-# TODO
-#    - decide if should use model.copy + set parameter or the constructor
-#    - hierarchization of debug traces
-#    - possibly refactor all functions into the Score class (must also adapt tests)
 
 # ---------------------------------------------------------------------
 # Module API
 
 
 class _Cache():
-    # TODO
+    """Class to cache the calls to the score function `score_dag`, indexed by the
+    given adjacency matrix `A` and intervention targets `I`.
+    """
 
     def __init__(self):
         self._As = []
@@ -107,7 +105,10 @@ class _Cache():
 
 
 class Score():
-    """
+    """Contains the implementation of the alternating optimization
+    procedure described in the paper; which fits a UT-LVC model given
+    a DAG adjacency and intervention targets `I`.
+
     Parameters
     ----------
     sample_covariances: numpy.ndarray
@@ -144,17 +145,159 @@ class Score():
     learning_rate: float
         The initial learning rate(factor by which gradient is
         multiplied) for the gradient descent subroutines.
+    cache: _Cache or None
+        The cache used to store results of calls to score_dag().
     """
 
     def __init__(self, data, num_latent, psi_max, psi_fixed, max_iter, threshold_dist_B, threshold_fluctuation, max_fluctuations, threshold_score, learning_rate, B_solver='grad', cache=True):
-        # Compute and/or store the sample covariances
-        if isinstance(data, tuple):
-            self.sample_covariances = data[0].copy()
-            self.n_obs = copy.deepcopy(data[1])
-        else:
+        """Create a new instance of a Score object.
+
+        Parameters
+        ----------
+        data : list of numpy.ndarray or tuple or numpy.ndarray
+            Can be either:
+              1) A list with the samples from each environment, where
+                 each sample is an array with columns corresponding to
+                 variables and rows to observations.
+              2) A tuple containing the precomputed sample covariances
+                 and number of observations from each environment.
+        num_latent: int
+           The assumed number of hidden variables.
+        psi_max: float, default = None
+           The maximum allowed change in variance between environments for
+           the hidden variables. If None, psis are unconstrained.
+        psi_fixed: bool
+           If `True`, impose the additional constraint that the hidden
+           variables have all the same variance.
+        max_iter: int
+           The maximum number of iterations allowed for the alternating
+           minimization procedure.
+        threshold_dist_B: float
+           If the change in B between successive iterations of the
+           alternating optimization procedure is lower than this
+           threshold, stop the procedure and return the estimate.
+        threshold_fluctuation: float
+           For the alternating optimization routine, if the score worsens by
+           more than this value, consider the iteration a fluctuation.
+        max_fluctuations: int
+           For the alternating optimization routine, the maximum number of
+           fluctuations(see above) allowed before stopping the
+           subroutine.
+        threshold_score: float
+           For the gradient descent subroutines, if change in score
+           between succesive iterations is below this threshold, stop.
+        learning_rate: float
+            The initial learning rate(factor by which gradient is
+            multiplied) for the gradient descent subroutines.
+        B_solver : {'grad', 'adaptive', 'cvx'}, default='grad'
+            Sets the solver for the connectivity matrix B, where the
+            options are (ordered by decreasing speed and increasing stability)
+            `grad`, `adaptive` and `cvx`.
+        cache : bool, default=True
+            If results from calling the `score_dag` function should be cached.
+
+        Raises
+        ------
+        ValueError :
+            If the given data is not valid, i.e. (different number of
+            variables per sample, or one sample with a single
+            observation). Also if the given `B_solver` is not valid.
+        TypeError :
+            If the given data is not a list of `numpy.ndarray`.
+
+        Examples
+        --------
+        >>> score_params = {'psi_max': None,
+        ...                 'psi_fixed': False,
+        ...                 'max_iter': 1000,
+        ...                 'threshold_dist_B': 1e-4,
+        ...                 'threshold_fluctuation': 1,
+        ...                 'max_fluctuations': 10,
+        ...                 'threshold_score': 1e-5,
+        ...                 'learning_rate': 1,
+        ...                 'cache': True}
+
+        Passing raw data:
+
+        >>> data = list(rng.uniform(size=(5,1000,20)))
+        >>> _ = Score(data, num_latent=2, **score_params)
+
+        Passing pre-computed sample covariances:
+
+        >>> n_obs = np.array([len(sample) for sample in data])
+        >>> sample_covariances = np.array([np.cov(sample, rowvar=False) for sample in data])
+        >>> _ = Score((sample_covariances, n_obs), num_latent=2, **score_params)
+
+        Errors when not all samples have the same number of variables:
+
+        >>> bad_data = data.copy()
+        >>> bad_data[0] = bad_data[0][:,:-1]
+        >>> Score(bad_data, num_latent=2, **score_params)
+        Traceback (most recent call last):
+        ...
+        ValueError: All samples must have the same number of variables.
+
+        >>> n_obs = np.array([len(sample) for sample in bad_data])
+        >>> sample_covariances = np.array([np.cov(sample, rowvar=False) for sample in bad_data])
+        >>> Score((sample_covariances, n_obs), num_latent=2, **score_params)
+        Traceback (most recent call last):
+        ...
+        ValueError: All samples must have the same number of variables.
+
+        Error when one sample has a single observation:
+
+        >>> bad_data = data.copy()
+        >>> bad_data[0] = bad_data[0][[0], :]
+        >>> Score(bad_data, num_latent=2, **score_params)
+        Traceback (most recent call last):
+        ...
+        ValueError: Each sample must contain at least two observations to estimate the covariance matrix.
+
+        Error when wrongly selecting the solver for `B`:
+        >>> Score(data, num_latent=2, B_solver='test', **score_params)
+        Traceback (most recent call last):
+        ...
+        ValueError: Unrecognized value "test" for parameter B_solver.
+        """
+        # Check inputs and compute/store covariance matrices
+        type_msg = "data should be a list or tuple of numpy.ndarray."
+        if isinstance(data, tuple) and len(data) == 2 and isinstance(data[0], np.ndarray) and isinstance(data[1], np.ndarray):
+            sample_covariances, n_obs = data
+            if len(sample_covariances) != len(n_obs):
+                raise ValueError(
+                    "Sample covariances and number of observations must have same length")
+            ps = np.array([len(s) for s in sample_covariances])
+            if len(np.unique(ps)) > 1:
+                raise ValueError(
+                    "All samples must have the same number of variables.")
+            # Store the sample covariances
+            self.sample_covariances = sample_covariances.copy()
+            self.n_obs = n_obs.copy()
+
+        elif isinstance(data, list):
+            # Check that all samples are arrays
+            for i, x in enumerate(data):
+                if not isinstance(x, np.ndarray):
+                    raise TypeError(type_msg)
+            # Check that all samples have the same number of variables
+            ps = np.array([x.shape[1] for x in data])
+            if len(np.unique(ps)) > 1:
+                raise ValueError(
+                    "All samples must have the same number of variables.")
+            # Check that all samples have at least one observation
+            n_obs = np.array([len(sample) for sample in data])
+            if (n_obs == 1).any():
+                raise ValueError(
+                    "Each sample must contain at least two observations to estimate the covariance matrix.")
+            # Compute sample covariances
+            self.n_obs = n_obs
             self.sample_covariances = np.array(
-                [np.cov(X, rowvar=False) for X in data])
-            self.n_obs = [len(X) for X in data]
+                [np.cov(sample, rowvar=False) for sample in data])
+        else:
+            raise TypeError(type_msg)
+
+        # Compute the sample covariances
+
         # Start cache
         self.cache = _Cache() if cache else None
 
@@ -163,8 +306,11 @@ class Score():
             self.B_solver = _solve_for_B_cvx
         elif B_solver == 'grad':
             self.B_solver = _solve_for_B_grad
-        else:
+        elif B_solver == 'adaptive':
             self.B_solver = _solve_for_B_adaptive
+        else:
+            raise ValueError(
+                'Unrecognized value "%s" for parameter B_solver.' % B_solver)
 
         self.num_latent = num_latent
         self.psi_max = psi_max
@@ -323,11 +469,30 @@ class Score():
 # Functions to solve for the different parameters of the model
 
 
-# def _solve_for_B(model, sample_covariances, n_obs, debug=False):
-#     return _solve_for_B_grad(model, sample_covariances, n_obs, debug)
-
-
 def _solve_for_B_grad(model, sample_covariances, n_obs, debug=False):
+    """Given all other parameters of the model, solve the convex
+    optimization problem to estimate B using a fast gradient descent
+    procedure.
+
+    Parameters
+    ----------
+    model : Model()
+        An instance of `model.Model` containing the parameters
+        representing the model.
+    sample_covariances : numpy.ndarray
+        A 3-dimensional array containing the estimated sample
+        covariances of the observed variables for each environment.
+    n_obs : list of ints
+        The number of observations available from each environment
+        (i.e. the sample size).
+
+    Returns
+    -------
+    B : numpy.ndarray
+        The estimated connectivity matrix between observed variables, where
+        B[i,j] != 0 => i -> j.
+
+    """
     # Inverse noise-term covariance matrices entailed by the model,
     # for each environment
     Ms = model.inv_noise_term_covariances()
@@ -378,6 +543,30 @@ def _solve_for_B_grad(model, sample_covariances, n_obs, debug=False):
 
 
 def _solve_for_B_adaptive(model, sample_covariances, n_obs, debug=False):
+    """Given all other parameters of the model, solve the convex
+    optimization problem to estimate B using an adaptive gradient
+    descent procedure.
+
+    Parameters
+    ----------
+    model : Model()
+        An instance of `model.Model` containing the parameters
+        representing the model.
+    sample_covariances : numpy.ndarray
+        A 3-dimensional array containing the estimated sample
+        covariances of the observed variables for each environment.
+    n_obs : list of ints
+        The number of observations available from each environment
+        (i.e. the sample size).
+
+    Returns
+    -------
+    B : numpy.ndarray
+        The estimated connectivity matrix between observed variables, where
+        B[i,j] != 0 => i -> j.
+
+    """
+
     # Loss (likelihood) function that we will use to adapt the learning rate
     def likelihood(B_flattened):
         B = np.eye(model.p) - \
@@ -1088,6 +1277,12 @@ def _regress(j, pa, cov):
     return np.linalg.solve(cov[pa, :][:, pa], cov[j, pa])
 
 
+# TODO
+#    - decide if should use model.copy + set parameter or the constructor
+#    - hierarchization of debug traces
+#    - possibly refactor all functions into the Score class (must also adapt tests)
+
+
 # --------------------------------------------------------------------
 # Doctests
 if __name__ == '__main__':
@@ -1136,6 +1331,7 @@ if __name__ == '__main__':
     n_obs = [100] * len(sample_covariances)
     doctest.testmod(extraglobs={'A': A,
                                 'B': B,
-                                'sample_covariances': sample_covariances},
+                                'sample_covariances': sample_covariances,
+                                'rng': np.random.default_rng(42)},
                     verbose=True,
                     optionflags=doctest.ELLIPSIS)
