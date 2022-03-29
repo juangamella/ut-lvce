@@ -35,6 +35,7 @@ import numpy as np
 import utlvce.utils as utils
 from utlvce.score import Score
 import utlvce
+import utlvce.ges
 import gc  # Garbage collector
 
 # TODO
@@ -58,7 +59,7 @@ def equivalence_class(candidate_dags, data, prune_edges=False,
                       max_fluctuations=5,
                       threshold_score=1e-5,
                       learning_rate=1,
-                      B_solver='cvx',
+                      B_solver='grad',
                       random_state=42,
                       verbose=0):
     """Estimate the equivalence class of the data-generating model from an
@@ -110,7 +111,7 @@ def equivalence_class(candidate_dags, data, prune_edges=False,
     learning_rate: float, default=1
         The initial learning rate(factor by which gradient is
         multiplied) for the gradient descent subroutines.
-    B_solver : {'grad', 'adaptive', 'cvx'}, default='cvx'
+    B_solver : {'grad', 'adaptive', 'cvx'}, default='grad'
         Sets the solver for the connectivity matrix B, where the
         options are (ordered by decreasing speed and increasing stability)
         `grad`, `adaptive` and `cvx`.
@@ -125,8 +126,8 @@ def equivalence_class(candidate_dags, data, prune_edges=False,
 
     Returns
     -------
-    estimated_cpdag : numpy.ndarray
-        The CPDAG representing the estimated equivalence class.
+    estimated_icpdag : numpy.ndarray
+        The I-CPDAG representing the estimated equivalence class.
     estimated_I : set of ints
         The estimated set of intervention targets.
     estimated_model : utlvce.model.Model
@@ -166,9 +167,9 @@ def equivalence_class(candidate_dags, data, prune_edges=False,
                   random_state=42,
                   store_history=0)
     (estimated_model, estimated_I, _test_score), exec_history = result
-    # Compute CPDAG
-    estimated_cpdag = utils.dag_to_icpdag(estimated_model.A, estimated_I)
-    return estimated_cpdag, estimated_I, estimated_model
+    # Compute I-CPDAG
+    estimated_icpdag = utils.dag_to_icpdag(estimated_model.A, estimated_I)
+    return estimated_icpdag, estimated_I, estimated_model
 
 
 def equivalence_class_w_ges(data,
@@ -182,7 +183,7 @@ def equivalence_class_w_ges(data,
                             max_fluctuations=5,
                             threshold_score=1e-5,
                             learning_rate=1,
-                            B_solver='cvx',
+                            B_solver='grad',
                             random_state=42,
                             verbose=0):
     """Estimate the equivalence class of the data-generating model, using
@@ -229,7 +230,7 @@ def equivalence_class_w_ges(data,
     learning_rate: float, default=1
         The initial learning rate(factor by which gradient is
         multiplied) for the gradient descent subroutines.
-    B_solver : {'grad', 'adaptive', 'cvx'}, default='cvx'
+    B_solver : {'grad', 'adaptive', 'cvx'}, default='grad'
         Sets the solver for the connectivity matrix B, where the
         options are (ordered by decreasing speed and increasing stability)
         `grad`, `adaptive` and `cvx`.
@@ -244,8 +245,8 @@ def equivalence_class_w_ges(data,
 
     Returns
     -------
-    estimated_cpdag : numpy.ndarray
-        The CPDAG representing the estimated equivalence class.
+    estimated_icpdag : numpy.ndarray
+        The I-CPDAG representing the estimated equivalence class.
     estimated_I : set of ints
         The estimated set of intervention targets.
     estimated_model : utlvce.model.Model
@@ -267,7 +268,7 @@ def equivalence_class_w_ges(data,
     result = _fit(data=data,
                   initial_graphs=None,  # This results in _fit running GES with default settings
                   nums_latent=nums_latent,
-                  prune_graph=prune_edges,
+                  prune_graph=True,
                   psi_max=psi_max,
                   psi_fixed=psi_fixed,
                   max_iter=max_iter,
@@ -282,9 +283,9 @@ def equivalence_class_w_ges(data,
                   random_state=42,
                   store_history=0)
     (estimated_model, estimated_I, _test_score), exec_history = result
-    # Compute CPDAG
-    estimated_cpdag = utils.dag_to_icpdag(estimated_model.A, estimated_I)
-    return estimated_cpdag, estimated_I, estimated_model
+    # Compute I-CPDAG
+    estimated_icpdag = utils.dag_to_icpdag(estimated_model.A, estimated_I)
+    return estimated_icpdag, estimated_I, estimated_model
 
 # ---------------------------------------------------------------------
 # Internal functions
@@ -461,10 +462,11 @@ def _fit(data,
         ges_data = training_data if ges_env is None else [
             training_data[ges_env]]
         initial_graphs = utlvce.ges.fit(
-            ges_data, phases=ges_phases, lambdas=ges_lambdas, verbose=1)
+            ges_data, phases=ges_phases, lambdas=ges_lambdas, verbose=verbose)
 
-    print("No. edges in initial graphs (%d)" % len(initial_graphs), [np.sum(A)
-                                                                     for A in initial_graphs])  # if verbose else None
+    if verbose:
+        print("No. edges in initial graphs (%d)" % len(initial_graphs), [np.sum(A)
+                                                                         for A in initial_graphs])  # if verbose else None
 
     # If no numbers of latents were given to select from by
     # cross-validation, pick the upper bound using the scree procedure
@@ -482,7 +484,7 @@ def _fit(data,
     results = dict()
     score_caches = dict()
     for h in nums_latent:
-        print("\n  h = %d" % h)
+        print("\n  h = %d" % h) if verbose else None
         # Start the score class for this number of latents h
         train_cache = Score(training_data, h, **score_params)
         # Prune all graphs by iteratively removing the weakest edge

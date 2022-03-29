@@ -554,7 +554,11 @@ class Model():
 
         string += "Assumption deviation metrics\n"
         string += "  latent incoherence x max. degree of moral graph: %s\n" % self.scaled_latent_incoherence()
-        string += "  strength of interventions: %s\n\n" % self.intervention_strength()
+        string += "  strength of interventions:\n"
+        for i, s in enumerate(self.intervention_strength()):
+            string += "    X_%d: %s\n" % (i, s)
+
+        string += "\n"
 
         string += "-" * 70 + "\n"
 
