@@ -12,5 +12,5 @@ setuptools.setup(
     description='',
     long_description=open('README_pypi.md').read(),
     long_description_content_type="text/markdown",
-    install_requires=['numpy>=1.17.0']
+    install_requires=['numpy>=1.17.0', 'cvxpy>=1.1.15', 'ges>=1.0.6']
 )
