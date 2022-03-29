@@ -462,7 +462,7 @@ def _fit(data,
         # Run GES on pooled training data or only a particular environment
         ges_data = training_data if ges_env is None else [
             training_data[ges_env]]
-        initial_graphs = utlvce.ges.fit(
+        initial_graphs = _fit_ges(
             ges_data, phases=ges_phases, lambdas=ges_lambdas, verbose=verbose)
 
     if verbose:
