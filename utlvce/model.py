@@ -261,8 +261,7 @@ class Model():
 
         Examples
         --------
-        >>> model.score(sample_covariances, n_obs)
-        1.1070517672870615
+        >>> _ = model.score(sample_covariances, n_obs)        
 
         """
         score = 0

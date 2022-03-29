@@ -549,7 +549,7 @@ def _dag_avg_deg(p, k, w_min=1, w_max=1, return_ordering=False, random_state=Non
 
     Example
     -------
-    >>> dag_avg_deg(5, 2, random_state = 42)
+    >>> _dag_avg_deg(5, 2, random_state = 42)
     array([[0., 0., 0., 1., 0.],
            [0., 0., 1., 1., 0.],
            [0., 0., 0., 1., 0.],
@@ -558,7 +558,7 @@ def _dag_avg_deg(p, k, w_min=1, w_max=1, return_ordering=False, random_state=Non
 
     Optionally, the ordering used to orient the edges can be returned
 
-    >>> dag_avg_deg(5, 2, return_ordering = True, random_state = 42)
+    >>> _dag_avg_deg(5, 2, return_ordering = True, random_state = 42)
     (array([[0., 0., 0., 1., 0.],
            [0., 0., 1., 1., 0.],
            [0., 0., 0., 1., 0.],
