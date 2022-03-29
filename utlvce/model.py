@@ -467,7 +467,7 @@ class Model():
         # Return appropriately
         if compute_sample_covariances:
             sample_covariances = [np.cov(x, rowvar=False) for x in X]
-            return X, np.array(sample_covariances), n_obs
+            return X, np.array(sample_covariances), np.array(n_obs)
         else:
             return X
 

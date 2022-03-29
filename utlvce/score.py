@@ -28,7 +28,13 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-"""
+"""This module contains the implementation of the alternating
+optimization procedure described in the paper, and used to fit/score a
+given DAG adjacency to the data.
+
+The procedure is implemented in the `Score` class, together with a
+caching mechanism to avoid re-running the procedure for the same DAG /
+intervention targets.
 """
 
 import numpy as np
@@ -41,67 +47,6 @@ import time
 
 # ---------------------------------------------------------------------
 # Module API
-
-
-class _Cache():
-    """Class to cache the calls to the score function `score_dag`, indexed by the
-    given adjacency matrix `A` and intervention targets `I`.
-    """
-
-    def __init__(self):
-        self._As = []
-        self._Is = []
-        self._scores = []
-        self._models = []
-
-    def _find(self, A, I):
-        """Return the index of a the pair (A,I) in the cache, or None if it is not stored."""
-        # Search first over graphs, as these will be the most heterogeneous
-        if len(self._As) == 0:
-            return None
-        A_indices = np.where((A == self._As).all(axis=(1, 2)))[0]
-        # No match
-        if len(A_indices) == 0:
-            return None
-        # Single match
-        elif len(A_indices) == 1:
-            index = A_indices[0]
-            if self._Is[index] == I:
-                return index
-            else:
-                return None
-        # Several matches
-        else:
-            possible_Is = np.array([self._Is[i] for i in A_indices])
-            I_subindices = np.where(possible_Is == I)[0]
-            if len(I_subindices) == 0:
-                return None
-            elif len(I_subindices) == 1:
-                I_index = I_subindices[0]
-                index = A_indices[I_index]
-                return index
-            else:
-                raise Exception(
-                    "Cache should contain only unique (A,I) entries")
-
-    def read(self, A, I):
-        """Return the cached score of an adjacency + intervention targets, or
-        None if it is not stored."""
-        index = self._find(A, I)
-        if index is None:
-            return None
-        else:
-            return self._models[index], self._scores[index]
-
-    def write(self, A, I, model, score, check=True):
-        """Save an element in the cache."""
-        if check and self._find(A, I) is not None:
-            raise ValueError("The given pair is already stored in the cache")
-        else:
-            self._As.append(A.copy())
-            self._Is.append(I.copy())
-            self._scores.append(score)
-            self._models.append(model.copy())
 
 
 class Score():
@@ -464,6 +409,71 @@ class Score():
             self.cache.write(A, I, current_model, current_score)
 
         return current_model, current_score
+
+# --------------------------------------------------------------------
+# Internal _Cache class used by the Score class
+
+
+class _Cache():
+    """Class to cache the calls to the score function `score_dag`, indexed by the
+    given adjacency matrix `A` and intervention targets `I`.
+    """
+
+    def __init__(self):
+        self._As = []
+        self._Is = []
+        self._scores = []
+        self._models = []
+
+    def _find(self, A, I):
+        """Return the index of a the pair (A,I) in the cache, or None if it is not stored."""
+        # Search first over graphs, as these will be the most heterogeneous
+        if len(self._As) == 0:
+            return None
+        A_indices = np.where((A == self._As).all(axis=(1, 2)))[0]
+        # No match
+        if len(A_indices) == 0:
+            return None
+        # Single match
+        elif len(A_indices) == 1:
+            index = A_indices[0]
+            if self._Is[index] == I:
+                return index
+            else:
+                return None
+        # Several matches
+        else:
+            possible_Is = np.array([self._Is[i] for i in A_indices])
+            I_subindices = np.where(possible_Is == I)[0]
+            if len(I_subindices) == 0:
+                return None
+            elif len(I_subindices) == 1:
+                I_index = I_subindices[0]
+                index = A_indices[I_index]
+                return index
+            else:
+                raise Exception(
+                    "Cache should contain only unique (A,I) entries")
+
+    def read(self, A, I):
+        """Return the cached score of an adjacency + intervention targets, or
+        None if it is not stored."""
+        index = self._find(A, I)
+        if index is None:
+            return None
+        else:
+            return self._models[index], self._scores[index]
+
+    def write(self, A, I, model, score, check=True):
+        """Save an element in the cache. If `check=True`, return an error if
+        the element already exists in the cache."""
+        if check and self._find(A, I) is not None:
+            raise ValueError("The given pair is already stored in the cache")
+        else:
+            self._As.append(A.copy())
+            self._Is.append(I.copy())
+            self._scores.append(score)
+            self._models.append(model.copy())
 
 # --------------------------------------------------------------------
 # Functions to solve for the different parameters of the model
