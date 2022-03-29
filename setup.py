@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name='utlvce',
-    version='0.0.1',
+    version='0.0.2',
     author='Juan L Gamella',
     author_email='juangamella@gmail.com',
     packages=['utlvce'],
