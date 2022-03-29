@@ -148,7 +148,7 @@ class Score():
             variables per sample, or one sample with a single
             observation). Also if the given `B_solver` is not valid.
         TypeError :
-            If the given data is not a list of `numpy.ndarray`.
+            If the given data is of invalid type.
 
         Examples
         --------
@@ -273,7 +273,7 @@ class Score():
         Parameters
         ----------
         A: numpy.ndarray
-            The adjacency of the given DAG, where A0[i, j] != 0 implies i -> j.
+            The adjacency of the given DAG, where `A[i, j] != 0 implies i -> j`.
         I: set
             The observed variables for which interventions are allowed,
             i.e. for which the noise term distribution is allowed to change

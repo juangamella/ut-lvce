@@ -37,9 +37,7 @@ import ges
 import ges.scores
 import time
 import utlvce.utils as utils
-# import pandas as pd
-# import networkx as nx
-# from cdt.causality.graph import GES
+
 
 # ---------------------------------------------------------------------
 # Module API
@@ -56,6 +54,14 @@ def fit(data, verbose=1, lambdas=None, phases=None):
         If debug and execution traces should be printed. `0`
         corresponds to no traces, higher values correspond to higher
         verbosity.
+    lambdas : NoneType or list of float
+        If `None`, GES runs with the default BIC score penalization
+        (2). If specified, GES runs for the given penalization values
+        and the resulting graphs are pooled.
+    phases : NoneType or [{'forward', 'backward', 'turning'}*], default=None
+        Specifies the phases of GES which should be run, and in which
+        order. When `None` GES will run the forward, backward and
+        turning phases.
 
     Returns
     -------
