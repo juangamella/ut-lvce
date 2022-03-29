@@ -337,7 +337,7 @@ class Model():
 
         Parameters
         ----------
-        n_obs : int or list of ints
+        n_obs : int or array-like of ints
             The number of observations to generate from each
             environment. If a single number is passed, generate this
             number of observations for all environments.
@@ -354,7 +354,7 @@ class Model():
             covariances of the observed variables for each
             environment. Returned only if
             `compute_sample_covariances=True`.
-        n_obs : list of ints
+        n_obs : numpy.nadarray of ints
             The number of observations available from each environment
             (i.e. the sample size). Returned only if
             `compute_sample_covariances=True`.
