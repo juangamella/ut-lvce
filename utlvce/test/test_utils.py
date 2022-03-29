@@ -37,11 +37,12 @@ import numpy as np
 import sempler
 import sempler.generators
 import itertools
-import networkx as nx
 import time
+# import networkx as nx
 
 import utlvce.utils as utils
 import utlvce.generators
+
 # ---------------------------------------------------------------------
 # Tests
 
@@ -316,24 +317,24 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(1, len(paths))
         self.assertTrue([3, 2] in paths)
 
-    def test_semi_directed_paths_2(self):
-        # Test vs. networkx implementation
-        G = 100
-        p = 30
-        for i in range(G):
-            A = sempler.generators.dag_avg_deg(p, 3, 1, 1)
-            cpdag = utils.pdag_to_cpdag(A)
-            G = nx.from_numpy_matrix(cpdag, create_using=nx.DiGraph)
-            for (x, y) in itertools.combinations(range(p), 2):
-                # From x to y
-                paths_own = utils.semi_directed_paths(x, y, cpdag)
-                paths_nx = list(nx.algorithms.all_simple_paths(G, x, y))
-                self.assertEqual(sorted(paths_nx), sorted(paths_own))
-                # From y to x
-                paths_own = utils.semi_directed_paths(y, x, cpdag)
-                paths_nx = list(nx.algorithms.all_simple_paths(G, y, x))
-                self.assertEqual(sorted(paths_nx), sorted(paths_own))
-                print("Checked path enumeration for %d PDAGs" % (i + 1))
+    # def test_semi_directed_paths_2(self):
+    #     # Test vs. networkx implementation
+    #     G = 100
+    #     p = 30
+    #     for i in range(G):
+    #         A = sempler.generators.dag_avg_deg(p, 3, 1, 1)
+    #         cpdag = utils.pdag_to_cpdag(A)
+    #         G = nx.from_numpy_matrix(cpdag, create_using=nx.DiGraph)
+    #         for (x, y) in itertools.combinations(range(p), 2):
+    #             # From x to y
+    #             paths_own = utils.semi_directed_paths(x, y, cpdag)
+    #             paths_nx = list(nx.algorithms.all_simple_paths(G, x, y))
+    #             self.assertEqual(sorted(paths_nx), sorted(paths_own))
+    #             # From y to x
+    #             paths_own = utils.semi_directed_paths(y, x, cpdag)
+    #             paths_nx = list(nx.algorithms.all_simple_paths(G, y, x))
+    #             self.assertEqual(sorted(paths_nx), sorted(paths_own))
+    #             print("Checked path enumeration for %d PDAGs" % (i + 1))
 
     def test_semi_directed_paths_3(self):
         A = np.array([[0, 1, 0, 0],
