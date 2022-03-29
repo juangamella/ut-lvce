@@ -65,7 +65,7 @@ venv:
 venv-tests:
 	python3 -m venv ./venv-tests
 	( \
-	. venv/bin/activate; \
+	. venv-tests/bin/activate; \
 	pip install --upgrade pip setuptools; \
 	pip install -r requirements_tests.txt; \
 	)
