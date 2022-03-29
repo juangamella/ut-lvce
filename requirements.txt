@@ -1,11 +1,3 @@
 numpy>=1.17.0
 cvxpy>=1.1.15
-ges==1.0.6
-sempler>=0.2.0
-networkx>=2.2
-
-# # For cdt
-# cdt>=0.5.23
-# torch==1.10.0+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
-# torchvision==0.11.1+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
-# torchaudio==0.10.0+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
+ges>=1.0.6

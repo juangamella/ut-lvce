@@ -34,8 +34,10 @@
 import numpy as np
 import utlvce.utils as utils
 from utlvce.score import Score
-import utlvce
+import ges
+import ges.scores
 import gc  # Garbage collector
+import time
 
 # TODO
 #   - Move functions to utils
@@ -47,9 +49,392 @@ import gc  # Garbage collector
 # Module API
 
 
-def fit(data, psi_max, psi_fixed, max_iter, threshold_dist_B, threshold_fluctuation, max_fluctuations, threshold_score, learning_rate, B_solver, nums_latent=None, initial_graphs=None, prune_graph=True, prune_I_method='rank', verbose=0, score_verbose=0, folds=[.5, .25, .25], threshold_graph=None, threshold_I=None, ges_env=None, ges_phases=None, ges_lambdas=None, random_state=42, store_history=1):
-    """TODO: Docstring"""
-    # TODO: Remove lambdas_I, lambdas_graph
+def equivalence_class(candidate_dags, data, prune_edges=False,
+                      nums_latent=[1, 2, 3],
+                      folds=[.5, .25, .25],
+                      psi_max=None,
+                      psi_fixed=False,
+                      max_iter=1000,
+                      threshold_dist_B=1e-3,
+                      threshold_fluctuation=1e-5,
+                      max_fluctuations=5,
+                      threshold_score=1e-5,
+                      learning_rate=1,
+                      B_solver='grad',
+                      random_state=42,
+                      verbose=0):
+    """Estimate the equivalence class of the data-generating model from an
+    initial set of candidate DAGs.
+
+    Parameters
+    ----------
+    candidate_dags : list of numpy.ndarray
+        A list of the candidate DAG adjacencies, where for each
+        adjacency A, `A[i, j] != 0 implies i -> j`.
+    data : list of numpy.ndarray
+        A list with the sample from each environment, where each
+        sample is an array with columns corresponding to variables and
+        rows to observations.
+    prune_edges : bool, default=False
+        If we also consider the pruned versions of the candidate
+        graphs.
+    nums_latent : list of ints, default=[1,2,3]
+        The candidates for the number of hidden variables, from which
+        one is selected via cross-validation.
+    folds : list of float, default=[0.5, 0.25, 0.25]
+        The size of the different splits of the data, where the first
+        corresponds to the training data (used to fit the models), the
+        second is used to select the number of latent variables and best
+        DAG, and the third is used to select the intervention targets.
+    psi_max: float, default = None
+       The maximum allowed change in variance between environments for
+       the hidden variables. If None, psis are unconstrained.
+    psi_fixed: bool, default = False
+       If `True`, impose the additional constraint that the hidden
+       variables have all the same variance.
+    max_iter: int, default=1000
+       The maximum number of iterations allowed for the alternating
+       minimization procedure.
+    threshold_dist_B: float, default=1e-3
+       If the change in B between successive iterations of the
+       alternating optimization procedure is lower than this
+       threshold, stop the procedure and return the estimate.
+    threshold_fluctuation: float, default=1e-5
+       For the alternating optimization routine, if the score worsens by
+       more than this value, consider the iteration a fluctuation.
+    max_fluctuations: int, default=5
+       For the alternating optimization routine, the maximum number of
+       fluctuations(see above) allowed before stopping the
+       subroutine.
+    threshold_score: float, default=1e-5
+       For the gradient descent subroutines, if change in score
+       between succesive iterations is below this threshold, stop.
+    learning_rate: float, default=1
+        The initial learning rate(factor by which gradient is
+        multiplied) for the gradient descent subroutines.
+    B_solver : {'grad', 'adaptive', 'cvx'}, default='grad'
+        Sets the solver for the connectivity matrix B, where the
+        options are (ordered by decreasing speed and increasing stability)
+        `grad`, `adaptive` and `cvx`.
+    random_state : int, default=42
+        To set the random state for reproducibility when randomly
+        splitting the data. Succesive calls with the same random state
+        will have the same result.
+    verbose: int, default = 0
+        If debug and execution traces should be printed. `0`
+        corresponds to no traces, higher values correspond to higher
+        verbosity.
+
+    Returns
+    -------
+    estimated_icpdag : numpy.ndarray
+        The I-CPDAG representing the estimated equivalence class.
+    estimated_I : set of ints
+        The estimated set of intervention targets.
+    estimated_model : utlvce.model.Model
+        The estimated model. Its underlying DAG adjacency can be
+        accessed by `estimated_model.A`. The fitted parameters and
+        assumption deviation metrics can be seen by calling
+        `print(estimated_model)` (see `utlvce.model` module).
+
+    Raises
+    ------
+    ValueError :
+        If (1) the given data is not valid, i.e. (different number of
+        variables per sample, or one sample with a single
+        observation), (2) if the given `B_solver` is not valid or (3)
+        if one of the candidate adjacencies does not correspond to a
+        DAG.
+    TypeError :
+        If the given data is not a list of `numpy.ndarray`.
+
+    """
+    candidate_dags = np.array(candidate_dags)
+    result = _fit(data=data,
+                  initial_graphs=candidate_dags,
+                  nums_latent=nums_latent,
+                  prune_graph=prune_edges,
+                  psi_max=psi_max,
+                  psi_fixed=psi_fixed,
+                  max_iter=max_iter,
+                  threshold_dist_B=threshold_dist_B,
+                  threshold_fluctuation=threshold_fluctuation,
+                  max_fluctuations=max_fluctuations,
+                  threshold_score=threshold_score,
+                  learning_rate=learning_rate,
+                  B_solver=B_solver,
+                  verbose=verbose,
+                  folds=folds,
+                  random_state=42,
+                  store_history=0)
+    (estimated_model, estimated_I, _test_score), exec_history = result
+    # Compute I-CPDAG
+    estimated_icpdag = utils.dag_to_icpdag(estimated_model.A, estimated_I)
+    return estimated_icpdag, estimated_I, estimated_model
+
+
+def equivalence_class_w_ges(data,
+                            nums_latent=[1, 2, 3],
+                            folds=[.5, .25, .25],
+                            psi_max=None,
+                            psi_fixed=False,
+                            max_iter=1000,
+                            threshold_dist_B=1e-3,
+                            threshold_fluctuation=1e-5,
+                            max_fluctuations=5,
+                            threshold_score=1e-5,
+                            learning_rate=1,
+                            B_solver='grad',
+                            random_state=42,
+                            verbose=0):
+    """Estimate the equivalence class of the data-generating model, using
+    the output of GES on the pooled data as an initial set of
+    candidate DAGs.
+
+    Parameters
+    ----------
+    data : list of numpy.ndarray
+        A list with the sample from each environment, where each
+        sample is an array with columns corresponding to variables and
+        rows to observations.
+    nums_latent : list of ints, default=[1,2,3]
+        The candidates for the number of hidden variables, from which
+        one is selected via cross-validation.
+    folds : list of float, default=[0.5, 0.25, 0.25]
+        The size of the different splits of the data, where the first
+        corresponds to the training data (used to fit the models), the
+        second is used to select the number of latent variables and best
+        DAG, and the third is used to select the intervention targets.
+    psi_max: float, default = None
+       The maximum allowed change in variance between environments for
+       the hidden variables. If None, psis are unconstrained.
+    psi_fixed: bool, default = False
+       If `True`, impose the additional constraint that the hidden
+       variables have all the same variance.
+    max_iter: int, default=1000
+       The maximum number of iterations allowed for the alternating
+       minimization procedure.
+    threshold_dist_B: float, default=1e-3
+       If the change in B between successive iterations of the
+       alternating optimization procedure is lower than this
+       threshold, stop the procedure and return the estimate.
+    threshold_fluctuation: float, default=1e-5
+       For the alternating optimization routine, if the score worsens by
+       more than this value, consider the iteration a fluctuation.
+    max_fluctuations: int, default=5
+       For the alternating optimization routine, the maximum number of
+       fluctuations(see above) allowed before stopping the
+       subroutine.
+    threshold_score: float, default=1e-5
+       For the gradient descent subroutines, if change in score
+       between succesive iterations is below this threshold, stop.
+    learning_rate: float, default=1
+        The initial learning rate(factor by which gradient is
+        multiplied) for the gradient descent subroutines.
+    B_solver : {'grad', 'adaptive', 'cvx'}, default='grad'
+        Sets the solver for the connectivity matrix B, where the
+        options are (ordered by decreasing speed and increasing stability)
+        `grad`, `adaptive` and `cvx`.
+    random_state : int, default=42
+        To set the random state for reproducibility when randomly
+        splitting the data. Succesive calls with the same random state
+        will have the same result.
+    verbose: int, default = 0
+        If debug and execution traces should be printed. `0`
+        corresponds to no traces, higher values correspond to higher
+        verbosity.
+
+    Returns
+    -------
+    estimated_icpdag : numpy.ndarray
+        The I-CPDAG representing the estimated equivalence class.
+    estimated_I : set of ints
+        The estimated set of intervention targets.
+    estimated_model : utlvce.model.Model
+        The estimated model. Its underlying DAG adjacency can be
+        accessed by `estimated_model.A`. The fitted parameters and
+        assumption deviation metrics can be seen by calling
+        `print(estimated_model)` (see `utlvce.model` module).
+
+    Raises
+    ------
+    ValueError :
+        If (1) the given data is not valid, i.e. (different number of
+        variables per sample, or one sample with a single
+        observation), (2) if the given `B_solver` is not valid.
+    TypeError :
+        If the given data is not a list of `numpy.ndarray`.
+
+    """
+    result = _fit(data=data,
+                  initial_graphs=None,  # This results in _fit running GES with default settings
+                  nums_latent=nums_latent,
+                  prune_graph=True,
+                  psi_max=psi_max,
+                  psi_fixed=psi_fixed,
+                  max_iter=max_iter,
+                  threshold_dist_B=threshold_dist_B,
+                  threshold_fluctuation=threshold_fluctuation,
+                  max_fluctuations=max_fluctuations,
+                  threshold_score=threshold_score,
+                  learning_rate=learning_rate,
+                  B_solver=B_solver,
+                  verbose=verbose,
+                  folds=folds,
+                  random_state=42,
+                  store_history=0)
+    (estimated_model, estimated_I, _test_score), exec_history = result
+    # Compute I-CPDAG
+    estimated_icpdag = utils.dag_to_icpdag(estimated_model.A, estimated_I)
+    return estimated_icpdag, estimated_I, estimated_model
+
+# ---------------------------------------------------------------------
+# Internal functions
+
+
+def _fit(data,
+         psi_max,
+         psi_fixed,
+         max_iter,
+         threshold_dist_B,
+         threshold_fluctuation,
+         max_fluctuations,
+         threshold_score,
+         learning_rate,
+         B_solver,
+         score_verbose=0,
+         nums_latent=None,
+         prune_graph=True,
+         folds=[.5, .25, .25],
+         threshold_graph=None,
+         threshold_I=None,
+         initial_graphs=None,
+         ges_env=None,
+         ges_phases=None,
+         ges_lambdas=None,
+         random_state=42,
+         store_history=1,
+         verbose=0):
+    """
+    Monolith function of the UT-LVCE algorithm.
+
+    Parameters
+    ----------
+    data : list of numpy.ndarray
+        A list with the sample from each environment, where each
+        sample is an array with columns corresponding to variables and
+        rows to observations.
+    psi_max: float
+       The maximum allowed change in variance between environments for
+       the hidden variables. If None, psis are unconstrained.
+    psi_fixed: bool
+       If `True`, impose the additional constraint that the hidden
+       variables have all the same variance.
+    max_iter: int
+       The maximum number of iterations allowed for the alternating
+       minimization procedure.
+    threshold_dist_B: float
+       If the change in B between successive iterations of the
+       alternating optimization procedure is lower than this
+       threshold, stop the procedure and return the estimate.
+    threshold_fluctuation: float
+       For the alternating optimization routine, if the score worsens by
+       more than this value, consider the iteration a fluctuation.
+    max_fluctuations: int
+       For the alternating optimization routine, the maximum number of
+       fluctuations(see above) allowed before stopping the
+       subroutine.
+    threshold_score: float
+       For the gradient descent subroutines, if change in score
+       between succesive iterations is below this threshold, stop.
+    learning_rate: float
+        The initial learning rate(factor by which gradient is
+        multiplied) for the gradient descent subroutines.
+    B_solver : {'grad', 'adaptive', 'cvx'}
+        Sets the solver for the connectivity matrix B, where the
+        options are (ordered by decreasing speed and increasing stability)
+        `grad`, `adaptive` and `cvx`.
+    score_verbose : int, default=0
+        Controls the level of verbosity of the alternating minmization
+        procedure.
+    nums_latent : NoneType or list of ints, default=None
+        The candidates for the number of hidden variables, from which
+        one is selected via cross-validation. If `None`, the number of
+        latents is selected using a scree-plot procedure (see
+        `_scree_selection` in this module).
+    prune_graph : bool, default=True
+        If we also consider the pruned versions of the candidate
+        graphs.
+    folds : list of float, default=[0.5, 0.25, 0.25]
+        The size of the different splits of the data, where the first
+        corresponds to the training data (used to fit the models), the
+        second is used to select the number of latent variables and best
+        DAG, and the third is used to select the intervention targets.
+    threshold_graph : NoneType or float, default=None
+        If not `None`, the graphs are pruned by removing all edges
+        with weight (in abs. value) below this threshold (see
+        _prune_graphs).
+    threshold_I : NoneType or float, default=None
+        If not `None`, the estimated intervention targets are selected
+        by taking variables whose variance of noise-term-variances is
+        above this threshold (see _prune_I).
+    initial_graphs: NoneType or numpy.ndarray
+        If `None`, GES is run to obtain an initial set of candidate
+        DAGs. The parameters `ges_{env,phases,lambdas}` control the
+        behaviour of GES. Otherwise, initial graphs is an array
+        containing the the candidate DAG adjacencies, where for each
+        adjacency A, `A[i, j] != 0 implies i -> j`.
+    ges_env : NoneType or int, default=None
+        The index of the environment on whose sample GES should
+        run. If `None`, GES runs on the data pooled across
+        environments.
+    ges_phases : NoneType or [{'forward', 'backward', 'turning'}*], default=None
+        Specifies the phases of GES which should be run, and in which
+        order. When `None` GES will run the forward, backward and
+        turning phases.
+    ges_lambdas : NoneType or list of float
+        If `None`, GES runs with the default BIC score penalization
+        (2). If specified, GES runs for the given penalization values
+        and the resulting graphs are pooled.
+    random_state : int, default=42
+        To set the random state for reproducibility when randomly
+        splitting the data. Succesive calls with the same random state
+        will have the same result.
+    store_history : int, default=1
+       If the execution history should be stored and returned, and in what level of detail, where
+         - =0 : Do not store additional information
+         - >0 : Store initial dags
+         - >1 : Store all pruned graphs / Is and their scores
+         - >2 : Store the cached score for computing metrics / debugging.
+    verbose: int, default = 0
+        If debug and execution traces should be printed. `0`
+        corresponds to no traces, higher values correspond to higher
+        verbosity.
+
+    Returns
+    -------
+    estimated_cpdag : numpy.ndarray
+        The CPDAG representing the estimated equivalence class.
+    estimated_I : set of ints
+        The estimated set of intervention targets.
+    estimated_model : utlvce.model.Model
+        The estimated model. Its underlying DAG adjacency can be
+        accessed by `estimated_model.A`. The fitted parameters and
+        assumption deviation metrics can be seen by calling
+        `print(estimated_model)` (see `utlvce.model` module).
+
+    Raises
+    ------
+    ValueError :
+        If (1) the given data is not valid, i.e. (different number of
+        variables per sample, or one sample with a single
+        observation), (2) if the given `B_solver` is not valid or (3)
+        if one of the candidate adjacencies does not correspond to a
+        DAG.
+    TypeError :
+        If the given data is not a list of `numpy.ndarray`.
+
+    """
     # Split the data
     [training_data, test_data_graph, test_data_I] = utils.split_data(
         data, ratios=folds, random_state=random_state)
@@ -77,11 +462,12 @@ def fit(data, psi_max, psi_fixed, max_iter, threshold_dist_B, threshold_fluctuat
         # Run GES on pooled training data or only a particular environment
         ges_data = training_data if ges_env is None else [
             training_data[ges_env]]
-        initial_graphs = utlvce.ges.fit(
-            ges_data, phases=ges_phases, lambdas=ges_lambdas, verbose=1)
+        initial_graphs = _fit_ges(
+            ges_data, phases=ges_phases, lambdas=ges_lambdas, verbose=verbose)
 
-    print("No. edges in initial graphs (%d)" % len(initial_graphs), [np.sum(A)
-                                                                     for A in initial_graphs])  # if verbose else None
+    if verbose:
+        print("No. edges in initial graphs (%d)" % len(initial_graphs), [np.sum(A)
+                                                                         for A in initial_graphs])  # if verbose else None
 
     # If no numbers of latents were given to select from by
     # cross-validation, pick the upper bound using the scree procedure
@@ -99,7 +485,7 @@ def fit(data, psi_max, psi_fixed, max_iter, threshold_dist_B, threshold_fluctuat
     results = dict()
     score_caches = dict()
     for h in nums_latent:
-        print("\n  h = %d" % h)
+        print("\n  h = %d" % h) if verbose else None
         # Start the score class for this number of latents h
         train_cache = Score(training_data, h, **score_params)
         # Prune all graphs by iteratively removing the weakest edge
@@ -169,9 +555,6 @@ def fit(data, psi_max, psi_fixed, max_iter, threshold_dist_B, threshold_fluctuat
             history['train_cache'] = train_cache
 
     return (best_model, best_I, final_test_score), history
-
-# ---------------------------------------------------------------------
-# Internal functions
 
 
 def _gaussian_log_likelihood(sample, mean, var):
@@ -313,11 +696,52 @@ def _weakest_edge(B):
     return utils.argmin(abs(B))
 
 
-def _penalizer(A, I, lmbda_graph, lmbda_I):
-    # TODO docstring
-    p = len(A)
-    max_degree = utils.degrees(utils.moral_graph(A)).max()
-    return lmbda_graph * (p * max_degree + np.sum(A != 0)) + lmbda_I * len(I)
+def _fit_ges(data, verbose=1, lambdas=None, phases=None):
+    """Pool the data and run GES on it, returning the estimated CPDAG.
+
+    Parameters
+    ----------
+    data : list of numpy.ndarray
+        A list containing the sample from each environment.
+    verbose : int, default=0
+        If debug and execution traces should be printed. `0`
+        corresponds to no traces, higher values correspond to higher
+        verbosity.
+    lambdas : NoneType or list of float
+        If `None`, GES runs with the default BIC score penalization
+        (2). If specified, GES runs for the given penalization values
+        and the resulting graphs are pooled.
+    phases : NoneType or [{'forward', 'backward', 'turning'}*], default=None
+        Specifies the phases of GES which should be run, and in which
+        order. When `None` GES will run the forward, backward and
+        turning phases.
+
+    Returns
+    -------
+    cpdag : numpy.ndarray
+        The adjacency matrix of the estimated CPDAG.
+    """
+    # Set phases & lambdas
+    phases = ['forward', 'backward', 'turning'] if phases is None else phases
+    lambdas = [2] if lambdas is None else lambdas
+    # Pool data
+    pooled_data = np.vstack(data)
+    N = len(pooled_data)
+    # Run GES
+    graphs = []
+    for pen in lambdas:
+        start = time.time()
+        print("  Running GES on pooled data for λ=%0.2f with phases=%s... " %
+              (pen, phases), end="") if verbose > 0 else None
+        # Set penalization
+        lmbda = pen * 0.5 * np.log(N)
+        score_class = ges.scores.GaussObsL0Pen(pooled_data, lmbda=lmbda)
+        # Run GES
+        cpdag = ges.fit(score_class, phases=phases, iterate=True)[0]
+        graphs += list(utils.all_dags(cpdag))
+        print("  done (%0.2f seconds)" %
+              (time.time() - start)) if verbose > 0 else None
+    return np.array(graphs)
 
 
 # --------------------------------------------------------------------

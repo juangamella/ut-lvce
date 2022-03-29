@@ -37,8 +37,8 @@ import numpy as np
 import sempler
 import sempler.generators
 import itertools
-import networkx as nx
 import time
+import networkx as nx
 
 import utlvce.utils as utils
 import utlvce.generators

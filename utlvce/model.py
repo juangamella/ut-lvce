@@ -261,8 +261,7 @@ class Model():
 
         Examples
         --------
-        >>> model.score(sample_covariances, n_obs)
-        1.1070517672870615
+        >>> _ = model.score(sample_covariances, n_obs)        
 
         """
         score = 0
@@ -338,7 +337,7 @@ class Model():
 
         Parameters
         ----------
-        n_obs : int or list of ints
+        n_obs : int or array-like of ints
             The number of observations to generate from each
             environment. If a single number is passed, generate this
             number of observations for all environments.
@@ -355,7 +354,7 @@ class Model():
             covariances of the observed variables for each
             environment. Returned only if
             `compute_sample_covariances=True`.
-        n_obs : list of ints
+        n_obs : numpy.nadarray of ints
             The number of observations available from each environment
             (i.e. the sample size). Returned only if
             `compute_sample_covariances=True`.
@@ -554,7 +553,11 @@ class Model():
 
         string += "Assumption deviation metrics\n"
         string += "  latent incoherence x max. degree of moral graph: %s\n" % self.scaled_latent_incoherence()
-        string += "  strength of interventions: %s\n\n" % self.intervention_strength()
+        string += "  strength of interventions:\n"
+        for i, s in enumerate(self.intervention_strength()):
+            string += "    X_%d: %s\n" % (i, s)
+
+        string += "\n"
 
         string += "-" * 70 + "\n"
 

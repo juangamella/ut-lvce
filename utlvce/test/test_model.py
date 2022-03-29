@@ -185,7 +185,7 @@ class TestModel(unittest.TestCase):
         X, sample_covariances, n_obs = self.model.sample(n, True)
         self.assertEqual((self.model.e, self.model.p,
                          self.model.p), sample_covariances.shape)
-        self.assertEqual([n] * self.model.e, n_obs)
+        self.assertTrue((np.array([n] * self.model.e) == n_obs).all())
         self.assertEqual(self.model.e, len(X))
         for x in X:
             self.assertEqual((n, self.model.p), x.shape)
@@ -195,7 +195,7 @@ class TestModel(unittest.TestCase):
         X, sample_covariances, n_obs = self.model.sample(n, True)
         self.assertEqual((self.model.e, self.model.p,
                          self.model.p), sample_covariances.shape)
-        self.assertEqual(n, n_obs)
+        self.assertTrue((np.array(n) == n_obs).all())
         self.assertEqual(self.model.e, len(X))
         for i, x in enumerate(X):
             self.assertEqual((n[i], self.model.p), x.shape)

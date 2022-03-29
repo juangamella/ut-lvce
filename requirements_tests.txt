@@ -1,0 +1,6 @@
+numpy>=1.17.0
+cvxpy>=1.1.15
+ges>=1.0.6
+sempler>=0.2.0
+termcolor>=1.1.0
+networkx>=2.2

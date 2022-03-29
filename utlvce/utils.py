@@ -37,8 +37,8 @@ algorithm described in Chickering's original GES paper from 2002.
 import numpy as np
 from functools import reduce
 import itertools
-import networkx as nx  # for d-separation
-import matplotlib.pyplot as plt
+# import networkx as nx  # for d-separation
+# import matplotlib.pyplot as plt
 
 # --------------------------------------------------------------------
 # Statistical functions
@@ -450,7 +450,8 @@ def semi_directed_paths(fro, to, A):
             stack = stack[1:]
         else:
             next_node = to_visit.pop()
-            next_to_visit = list(accessible[next_node] - set(visited) - {current_node})
+            next_to_visit = list(
+                accessible[next_node] - set(visited) - {current_node})
             stack = [(next_node, visited + [current_node], next_to_visit)] + stack
     return paths
 
@@ -480,7 +481,8 @@ def separates(S, A, B, G):
     """
     # Check that sets are pairwise disjoint
     if len(A & B) or len(A & S) or len(B & S):
-        raise ValueError("The sets S=%s,A=%s and B=%s are not pairwise disjoint" % (S, A, B))
+        raise ValueError(
+            "The sets S=%s,A=%s and B=%s are not pairwise disjoint" % (S, A, B))
     for a in A:
         for b in B:
             for path in semi_directed_paths(a, b, G):
@@ -489,10 +491,10 @@ def separates(S, A, B, G):
     return True
 
 
-def d_separated(S1, S2, S3, dag):
-    """Return True if S1 is d-separated from S2 given S3 in the given dag."""
-    G = nx.from_numpy_matrix(dag, create_using=nx.DiGraph)
-    return nx.d_separated(G, S1, S2, S3)
+# def d_separated(S1, S2, S3, dag):
+#     """Return True if S1 is d-separated from S2 given S3 in the given dag."""
+#     G = nx.from_numpy_matrix(dag, create_using=nx.DiGraph)
+#     return nx.d_separated(G, S1, S2, S3)
 
 
 def is_stable_set(S, j, I, G):
@@ -737,35 +739,37 @@ def edge_weights(W):
     return edge_weights
 
 
-def plot_graph(W, labels=None, weights=False, block=False):
-    """Plot a graph with weight matrix W."""
-    # TODO: Move to sempler
-    G = nx.from_numpy_matrix(W, create_using=nx.DiGraph)
-    pos = nx.drawing.layout.shell_layout(G, scale=0.5)
-    edge_labels = nx.get_edge_attributes(G, 'weight')
-    p = len(W)
-    if labels is None:
-        node_labels = dict(zip(np.arange(p), map(lambda i: "$X_{%d}$" % i, range(p))))
-    else:
-        node_labels = dict(zip(np.arange(p), labels))
-    # Plot
-    fig = plt.figure()
-    params = {'node_color': 'white',
-              'edgecolors': 'black',
-              'node_size': 900,
-              'linewidths': 1.5,
-              'width': 1.5,
-              'arrowsize': 20,
-              'arrowstyle': '->',
-              'min_target_margin': 10,
-              'labels': node_labels}
-    nx.draw(G, pos, **params)
-    # Edge weights
-    if weights:
-        formatted = dict((e, "%0.3f" % w) for (e, w) in edge_weights(W).items())
-        nx.draw_networkx_edge_labels(G, pos, formatted, font_color='red')
-    fig.set_facecolor("white")
-    plt.show(block=block)
+# def plot_graph(W, labels=None, weights=False, block=False):
+#     """Plot a graph with weight matrix W."""
+#     # TODO: Move to sempler
+#     G = nx.from_numpy_matrix(W, create_using=nx.DiGraph)
+#     pos = nx.drawing.layout.shell_layout(G, scale=0.5)
+#     edge_labels = nx.get_edge_attributes(G, 'weight')
+#     p = len(W)
+#     if labels is None:
+#         node_labels = dict(zip(np.arange(p), map(
+#             lambda i: "$X_{%d}$" % i, range(p))))
+#     else:
+#         node_labels = dict(zip(np.arange(p), labels))
+#     # Plot
+#     fig = plt.figure()
+#     params = {'node_color': 'white',
+#               'edgecolors': 'black',
+#               'node_size': 900,
+#               'linewidths': 1.5,
+#               'width': 1.5,
+#               'arrowsize': 20,
+#               'arrowstyle': '->',
+#               'min_target_margin': 10,
+#               'labels': node_labels}
+#     nx.draw(G, pos, **params)
+#     # Edge weights
+#     if weights:
+#         formatted = dict((e, "%0.3f" % w)
+#                          for (e, w) in edge_weights(W).items())
+#         nx.draw_networkx_edge_labels(G, pos, formatted, font_color='red')
+#     fig.set_facecolor("white")
+#     plt.show(block=block)
 
 
 def skeleton(A):
@@ -824,8 +828,10 @@ def is_consistent_extension(G, P, debug=False):
     # guaranteed to have
     # no undirected edges
     if debug:
-        print("v-structures (%s) (P,G): " % same_vstructures, vstructures(P), vstructures(G))
-        print("skeleton (%s) (P,G): " % same_skeleton, skeleton(P), skeleton(G))
+        print("v-structures (%s) (P,G): " %
+              same_vstructures, vstructures(P), vstructures(G))
+        print("skeleton (%s) (P,G): " %
+              same_skeleton, skeleton(P), skeleton(G))
         print("orientation (%s) (P,G): " % same_orientation, P, G)
     return same_vstructures and same_orientation and same_skeleton
 
@@ -890,7 +896,8 @@ def add_edges(A, no_edges, random_state=42):
     p = len(A)
     can_add = int(p * (p - 1) / 2 - A.sum())
     if no_edges > can_add:
-        raise ValueError("It is not possible to add %d edges to the given DAG." % no_edges)
+        raise ValueError(
+            "It is not possible to add %d edges to the given DAG." % no_edges)
     # Add edges at random
     supergraph = A.copy()
     i = 0
@@ -1044,12 +1051,14 @@ def pdag_to_dag(P, debug=False):
             n_i = neighbors(i, P)
             adj_i = adj(i, P)
             adj_neighbors = np.all([adj_i - {y} <= adj(y, P) for y in n_i])
-            print("   i:", i, ": n=", n_i, "adj=", adj_i, "ch=", ch(i, P)) if debug else None
+            print("   i:", i, ": n=", n_i, "adj=", adj_i,
+                  "ch=", ch(i, P)) if debug else None
             found = sink and adj_neighbors
             # If found, orient all incident undirected edges and
             # remove i from the subgraph
             if found:
-                print("  Found candidate %d (%d)" % (i, indexes[i])) if debug else None
+                print("  Found candidate %d (%d)" %
+                      (i, indexes[i])) if debug else None
                 # Orient all incident undirected edges
                 real_i = indexes[i]
                 real_neighbors = [indexes[j] for j in n_i]
@@ -1065,7 +1074,8 @@ def pdag_to_dag(P, debug=False):
         # A node which satisfies conditions 1,2 exists iff the
         # PDAG admits a consistent extension
         if not found:
-            raise ValueError("PDAG %s does not admit consistent extension" % oP)
+            raise ValueError(
+                "PDAG %s does not admit consistent extension" % oP)
     return G
 
 
@@ -1133,7 +1143,8 @@ def label_edges(ordered):
         raise ValueError("The given graph is not a DAG")
     no_edges = (ordered != 0).sum()
     if sorted(ordered[ordered != 0]) != list(range(1, no_edges + 1)):
-        raise ValueError("The ordering of edges is not valid:", ordered[ordered != 0])
+        raise ValueError("The ordering of edges is not valid:",
+                         ordered[ordered != 0])
     # define labels: 1: compelled, -1: reversible, -2: unknown
     COM, REV, UNK = 1, -1, -2
     labelled = (ordered != 0).astype(int) * UNK
@@ -1474,14 +1485,16 @@ def maximally_orient(P, debug=False):
                 # orient i -> j
                 oriented_edges = True
                 if debug:
-                    rules = [rule_1(i, j, P), rule_2(i, j, P), rule_3(i, j, P), rule_4(i, j, P)]
+                    rules = [rule_1(i, j, P), rule_2(i, j, P),
+                             rule_3(i, j, P), rule_4(i, j, P)]
                     print('Rules: %s => Oriented %d -> %d' % (rules, i, j))
                 P[j, i] = 0
             elif rule_1(j, i, P) or rule_2(j, i, P) or rule_3(j, i, P) or rule_4(j, i, P):
                 oriented_edges = True
                 # orient j -> i
                 if debug:
-                    rules = [rule_1(j, i, P), rule_2(j, i, P), rule_3(j, i, P), rule_4(j, i, P)]
+                    rules = [rule_1(j, i, P), rule_2(j, i, P),
+                             rule_3(j, i, P), rule_4(j, i, P)]
                     print('Rules: %s => Orjented %d -> %d' % (rules, j, i))
                 P[i, j] = 0
     return P
@@ -1529,19 +1542,22 @@ def all_dags(pdag):
         The adjacencies of the consistent extensions.
     """
     fro, to = np.where(only_undirected(pdag))
-    undirected_edges = np.array(list(filter(lambda e: e[0] > e[1], zip(fro, to))))
+    undirected_edges = np.array(
+        list(filter(lambda e: e[0] > e[1], zip(fro, to))))
     assert len(undirected_edges) == np.sum(only_undirected(pdag)) / 2
     if len(undirected_edges) == 0:
         return np.array([pdag.copy()])
     # All possible orientations for the undirected edges
-    combinations = cartesian([np.array([True, False])] * len(undirected_edges), dtype=bool)
+    combinations = cartesian([np.array([True, False])]
+                             * len(undirected_edges), dtype=bool)
     assert len(combinations) == 2**(np.sum(only_undirected(pdag)) / 2)
     dags = []
     # Iterate over all possible combinations, flipping the edges
     oriented_edges = np.zeros_like(undirected_edges)
     for flipped in combinations:
         oriented_edges[flipped, :] = undirected_edges[:, [1, 0]][flipped]
-        oriented_edges[flipped == False, :] = undirected_edges[:, [0, 1]][flipped == False]
+        oriented_edges[flipped == False,
+                       :] = undirected_edges[:, [0, 1]][flipped == False]
         A = pdag.copy()
         A[oriented_edges[:, 1], oriented_edges[:, 0]] = 0
         dags.append(A)

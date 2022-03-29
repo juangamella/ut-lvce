@@ -43,7 +43,8 @@ endif
 
 # Run the example scripts in the README
 examples:
-	PYTHONPATH=./ python3 docs/example.py
+	PYTHONPATH=./ python3 docs/equivalence_class_example.py
+	PYTHONPATH=./ python3 docs/equivalence_class_ges_example.py
 
 # Run the doctests
 doctests:
@@ -52,7 +53,7 @@ doctests:
 	PYTHONPATH=./ python3 $(PROJECT)/model.py
 	PYTHONPATH=./ python3 $(PROJECT)/generators.py
 
-# Set up virtual environment
+# Set up virtual environment for execution
 venv:
 	python3 -m venv ./venv
 	( \
@@ -60,8 +61,17 @@ venv:
 	pip install --upgrade pip setuptools; \
 	pip install -r requirements.txt; \
 	)
+# Set up virtual environment for tests 
+venv-tests:
+	python3 -m venv ./venv-tests
+	( \
+	. venv-tests/bin/activate; \
+	pip install --upgrade pip setuptools; \
+	pip install -r requirements_tests.txt; \
+	)
+
 
 clean:
-	rm -rf venv
+	rm -rf venv venv-tests
 
 .PHONY: test, tests, examples, venv
