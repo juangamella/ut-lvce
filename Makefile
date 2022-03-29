@@ -72,6 +72,6 @@ venv-tests:
 
 
 clean:
-	rm -rf venv
+	rm -rf venv venv-tests
 
 .PHONY: test, tests, examples, venv
