@@ -34,9 +34,10 @@
 import numpy as np
 import utlvce.utils as utils
 from utlvce.score import Score
-import utlvce
-import utlvce.ges
+import ges
+import ges.scores
 import gc  # Garbage collector
+import time
 
 # TODO
 #   - Move functions to utils
@@ -693,6 +694,54 @@ def _weakest_edge(B):
     B = B.copy()
     B[B == 0] = np.Inf
     return utils.argmin(abs(B))
+
+
+def _fit_ges(data, verbose=1, lambdas=None, phases=None):
+    """Pool the data and run GES on it, returning the estimated CPDAG.
+
+    Parameters
+    ----------
+    data : list of numpy.ndarray
+        A list containing the sample from each environment.
+    verbose : int, default=0
+        If debug and execution traces should be printed. `0`
+        corresponds to no traces, higher values correspond to higher
+        verbosity.
+    lambdas : NoneType or list of float
+        If `None`, GES runs with the default BIC score penalization
+        (2). If specified, GES runs for the given penalization values
+        and the resulting graphs are pooled.
+    phases : NoneType or [{'forward', 'backward', 'turning'}*], default=None
+        Specifies the phases of GES which should be run, and in which
+        order. When `None` GES will run the forward, backward and
+        turning phases.
+
+    Returns
+    -------
+    cpdag : numpy.ndarray
+        The adjacency matrix of the estimated CPDAG.
+    """
+    # Set phases & lambdas
+    phases = ['forward', 'backward', 'turning'] if phases is None else phases
+    lambdas = [2] if lambdas is None else lambdas
+    # Pool data
+    pooled_data = np.vstack(data)
+    N = len(pooled_data)
+    # Run GES
+    graphs = []
+    for pen in lambdas:
+        start = time.time()
+        print("  Running GES on pooled data for λ=%0.2f with phases=%s... " %
+              (pen, phases), end="") if verbose > 0 else None
+        # Set penalization
+        lmbda = pen * 0.5 * np.log(N)
+        score_class = ges.scores.GaussObsL0Pen(pooled_data, lmbda=lmbda)
+        # Run GES
+        cpdag = ges.fit(score_class, phases=phases, iterate=True)[0]
+        graphs += list(utils.all_dags(cpdag))
+        print("  done (%0.2f seconds)" %
+              (time.time() - start)) if verbose > 0 else None
+    return np.array(graphs)
 
 
 # --------------------------------------------------------------------
