@@ -1,3 +1,6 @@
+v0.1.0, 2022-03-31
+-- Created sphynx documentation, README, etc.
+-- Minor refactoring in model module
 v0.0.2, 2022-03-29
 -- Minor fix to MANIFEST.in file, without which the pacakge could not be built.
 v0.0.1, 2022-03-29
