@@ -25,6 +25,14 @@ If you're interested in running the algorithms proposed in the paper for your ow
 
 We also document here the other functionalities of the package, such as generating synthetic data and random models for your own experiments (see :mod:`utlvce.generators` and :class:`utlvce.model`). If you're interested in the alternating optimization procedure from section 4.1, you can find more details under :mod:`utlvce.score`.
 
+Versioning
+----------
+
+The pacakge is still at its infancy and its API may change in the future. Non backward-compatible changes to the API are reflected by a change to the minor or major version number, e.g.
+
+    *code written using utlvce==0.1.2 will run with utlvce==0.1.3, but may not run with utlvce==0.2.0.*
+
+
 License
 -------
 The code is open-source and shared under a BSD 3-Clause License. You can find the full license and the source code in the `GitHub repository <https://github.com/juangamella/ut-lvce)>`_.
