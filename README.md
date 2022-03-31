@@ -7,7 +7,7 @@ You can find the full docs at https://utlvce.readthedocs.io/en/latest/.
 The code to reproduce the experiments and figures in the paper can be found in a separate [repository](https://github.com/juangamella/ut-lvce-paper).
 
 ### Installation
-You can clone this repo or install using pip:
+You can clone this repo or install the package using pip:
 ```
 pip install utlvce
 ```
