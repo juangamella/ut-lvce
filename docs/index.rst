@@ -8,7 +8,7 @@ Welcome to utlvce's documentation!
 
 The ``utlvce`` package is a Python implementation of the UT-LVCE algorithms from the 2022 `paper <https://arxiv.org/abs/2101.06950>`_ "Perturbations and Causality in Gaussian Latent Variable Models", by A. Taeb, JL. Gamella, C. Heinze-Deml and P. Bühlmann.
 
-You can find the source code in the package's `GitHub repository <https://github.com/juangamella/ut-lvce)>`_. The code to reproduce the experiments and figures in the paper can be found in a `separate repository <https://github.com/juangamella/ut-lvce-paper)>`_.
+You can find the source code in the package's `GitHub repository <https://github.com/juangamella/ut-lvce>`_. The code to reproduce the experiments and figures in the paper can be found in a `separate repository <https://github.com/juangamella/ut-lvce-paper>`_.
 
 **Installation**
 
@@ -35,12 +35,12 @@ The pacakge is still at its infancy and its API may change in the future. Non ba
 
 License
 -------
-The code is open-source and shared under a BSD 3-Clause License. You can find the full license and the source code in the `GitHub repository <https://github.com/juangamella/ut-lvce)>`_.
+The code is open-source and shared under a BSD 3-Clause License. You can find the full license and the source code in the `GitHub repository <https://github.com/juangamella/ut-lvce>`_.
 
 Feedback
 --------
 
-Feedback is most welcome! You can add an issue in the `repository <https://github.com/juangamella/ut-lvce)>`_ or send an `email <mailto:juan.gamella@stat.math.ethz.ch>`_.
+Feedback is most welcome! You can add an issue in the `repository <https://github.com/juangamella/ut-lvce>`_ or send an `email <mailto:juan.gamella@stat.math.ethz.ch>`_.
 
 
 
