@@ -107,12 +107,13 @@ def chain_graph_model(p,
         i.e. that the variances of the noise terms and latents are
         lower (variable-wise) than the other environments. With
         `obs=True`, the variances for first environment are sampled
-        from [*_lo, *_hi] (here `*=var,psi`) and, from `[*_lo +
-        int_*_lo, *_hi + int_*_hi]` for the remaining environments. If
-        `obs=False`, the latter interval is used for all
-        environments. Note that is not a necessary assumption for the
-        UT-LVCE estimator, but allows setting the intervention
-        strength with more certainty.
+        from `[var_lo, var_hi]` and, from `[var_lo + int_var_lo,
+        var_hi + int_var_hi]` for the remaining environments; the same
+        holds for the sampling of `psi`. If `obs=False`, the latter
+        interval is used for all environments. Note that is not a
+        necessary assumption for the UT-LVCE estimator, but makes the
+        actual intervention strength less sensitive to the random
+        sampling of parameters.
     random_state : int, default=42
         To set the random state for reproducibility. Succesive calls
         with the same random state will return the same model.
@@ -227,12 +228,13 @@ def random_graph_model(p,
         i.e. that the variances of the noise terms and latents are
         lower (variable-wise) than the other environments. With
         `obs=True`, the variances for first environment are sampled
-        from [*_lo, *_hi] (here `*=var,psi`) and, from `[*_lo +
-        int_*_lo, *_hi + int_*_hi]` for the remaining environments. If
-        `obs=False`, the latter interval is used for all
-        environments. Note that is not a necessary assumption for the
-        UT-LVCE estimator, but allows setting the intervention
-        strength with more certainty.
+        from `[var_lo, var_hi]` and, from `[var_lo + int_var_lo,
+        var_hi + int_var_hi]` for the remaining environments; the same
+        holds for the sampling of `psi`. If `obs=False`, the latter
+        interval is used for all environments. Note that is not a
+        necessary assumption for the UT-LVCE estimator, but makes the
+        actual intervention strength less sensitive to the random
+        sampling of parameters.
     random_state : int, default=42
         To set the random state for reproducibility. Succesive calls
         with the same random state will return the same model.
@@ -345,12 +347,13 @@ def sample_parameters(A,
         i.e. that the variances of the noise terms and latents are
         lower (variable-wise) than the other environments. With
         `obs=True`, the variances for first environment are sampled
-        from [*_lo, *_hi] (here `*=var,psi`) and, from `[*_lo +
-        int_*_lo, *_hi + int_*_hi]` for the remaining environments. If
-        `obs=False`, the latter interval is used for all
-        environments. Note that is not a necessary assumption for the
-        UT-LVCE estimator, but allows setting the intervention
-        strength with more certainty.
+        from `[var_lo, var_hi]` and, from `[var_lo + int_var_lo,
+        var_hi + int_var_hi]` for the remaining environments; the same
+        holds for the sampling of `psi`. If `obs=False`, the latter
+        interval is used for all environments. Note that is not a
+        necessary assumption for the UT-LVCE estimator, but makes the
+        actual intervention strength less sensitive to the random
+        sampling of parameters.
     random_state : int, default=42
         To set the random state for reproducibility. Succesive calls
         with the same random state will return the same model.
