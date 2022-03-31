@@ -11,6 +11,7 @@ Welcome to utlvce's documentation!
    :caption: Contents:
 
    self
+   model
    generators
 
 
