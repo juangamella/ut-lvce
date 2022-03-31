@@ -39,7 +39,7 @@ import utlvce.utils as utils
 
 
 class Model():
-    """The :class:`utlvce.Model` class holds the parameters of the model and offers additional functionality like checking deviation from
+    """The :class:`utlvce.Model` class holds the parameters of the model and offers additional functionality such as checking deviation from
     assumptions or generating intermediate quantities used in the alternating optimization procedure. It also allows generating data according to the model (see :func:`~utlvce.Model.sample` below).
 
     It defines the following parameters:

@@ -170,13 +170,15 @@ class Score():
         ...                 'learning_rate': 1,
         ...                 'cache': True}
         >>> data = list(rng.uniform(size=(5,1000,20)))
-        >>> _ = Score(data, num_latent=2, **score_params)
+        >>> Score(data, num_latent=2, **score_params) #doctest: +ELLIPSIS        
+        <__main__.Score object at 0x...>
 
         Or passing pre-computed sample covariances:
 
         >>> n_obs = np.array([len(sample) for sample in data])
         >>> sample_covariances = np.array([np.cov(sample, rowvar=False) for sample in data])
-        >>> _ = Score((sample_covariances, n_obs), num_latent=2, **score_params)
+        >>> Score((sample_covariances, n_obs), num_latent=2, **score_params) #doctest: +ELLIPSIS
+        <__main__.Score object at 0x...>
 
         Errors are raised when not all samples have the same number of variables:
 
