@@ -1,4 +1,4 @@
-Running the UT-LVCE Algorithms
+Running the UT-LVCE algorithms
 ==============================
 
 The `paper <https://arxiv.org/abs/2101.06950>`_ proposes two algorithms for estimating the interventional equivalence class, and a full causal discovery procedure:
@@ -11,7 +11,7 @@ These are provided through the functions :func:`utlvce.equivalence_class` and :f
 
 ----
 
-We now provide details and examples on how to accomplish this; the code can also be found [here]. To this end we will first generate some synthetic data using the :mod:`utlvce.generators` module:
+We now provide details and examples on how to run the algorithms; the example code can also be found `here <https://github.com/juangamella/ut-lvce/blob/develop/docs/algorithms_example.py>`_. To this end we will first generate some synthetic data using the :mod:`utlvce.generators` module:
 
 .. literalinclude:: algorithms_example.py
    :lines: 1-12
