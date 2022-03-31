@@ -63,7 +63,7 @@ def equivalence_class(candidate_dags, data, prune_edges=False,
                       B_solver='grad',
                       random_state=42,
                       verbose=0):
-    """Estimate the equivalence class of the data-generating model from an
+    """Estimate the equivalence class of the best scoring graph from an
     initial set of candidate DAGs.
 
     Parameters
