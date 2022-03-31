@@ -29,7 +29,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 """
-This module contains functions to generate random models from fixed or random DAG adjacencies.
+The :mod:`utlvce.generators` module contains functions to generate random UT-LVCE models from given or random DAG adjacencies.
 """
 
 
@@ -107,14 +107,15 @@ def chain_graph_model(p,
         i.e. that the variances of the noise terms and latents are
         lower (variable-wise) than the other environments. With
         `obs=True`, the variances for first environment are sampled
-        from [*_lo, *_hi] (here `*=var,psi`) and, from `[*_lo +
-        int_*_lo, *_hi + int_*_hi]` for the remaining environments. If
-        `obs=False`, the latter interval is used for all
-        environments. Note that is not a necessary assumption for the
-        UT-LVCE estimator, but allows setting the intervention
-        strength with more certainty.
+        from `[var_lo, var_hi]` and, from `[var_lo + int_var_lo,
+        var_hi + int_var_hi]` for the remaining environments; the same
+        holds for the sampling of `psi`. If `obs=False`, the latter
+        interval is used for all environments. Note that is not a
+        necessary assumption for the UT-LVCE estimator, but makes the
+        actual intervention strength less sensitive to the random
+        sampling of parameters.
     random_state : int, default=42
-        To set the random state for reproducibility. Succesive calls
+        To set the random state for reproducibility. Successive calls
         with the same random state will return the same model.
     verbose: int, default = 0
         If debug and execution traces should be printed. `0`
@@ -134,7 +135,8 @@ def chain_graph_model(p,
 
     Examples
     --------
-    >>> model = chain_graph_model(20,{2},2,5,0.5,0.6,3,6,0.2,0.4,1,5,0.7,0.8,False,True,42,0)
+    >>> chain_graph_model(20,{2},2,5,0.5,0.6,3,6,0.2,0.4,1,5,0.7,0.8,False,True,42,0) #doctest: +ELLIPSIS
+    <utlvce.model.Model object at 0x...>
     """
     A = utils.chain_graph(p)
     return sample_parameters(A,
@@ -227,14 +229,15 @@ def random_graph_model(p,
         i.e. that the variances of the noise terms and latents are
         lower (variable-wise) than the other environments. With
         `obs=True`, the variances for first environment are sampled
-        from [*_lo, *_hi] (here `*=var,psi`) and, from `[*_lo +
-        int_*_lo, *_hi + int_*_hi]` for the remaining environments. If
-        `obs=False`, the latter interval is used for all
-        environments. Note that is not a necessary assumption for the
-        UT-LVCE estimator, but allows setting the intervention
-        strength with more certainty.
+        from `[var_lo, var_hi]` and, from `[var_lo + int_var_lo,
+        var_hi + int_var_hi]` for the remaining environments; the same
+        holds for the sampling of `psi`. If `obs=False`, the latter
+        interval is used for all environments. Note that is not a
+        necessary assumption for the UT-LVCE estimator, but makes the
+        actual intervention strength less sensitive to the random
+        sampling of parameters.
     random_state : int, default=42
-        To set the random state for reproducibility. Succesive calls
+        To set the random state for reproducibility. Successive calls
         with the same random state will return the same model.
     verbose: int, default = 0
         If debug and execution traces should be printed. `0`
@@ -254,7 +257,8 @@ def random_graph_model(p,
 
     Examples
     --------
-    >>> model = random_graph_model(20,2.1,{2},2,5,0.5,0.6,3,6,0.2,0.4,1,5,0.7,0.8,False,True,42,0)
+    >>> random_graph_model(20,2.1,{2},2,5,0.5,0.6,3,6,0.2,0.4,1,5,0.7,0.8,False,True,42,0) #doctest: +ELLIPSIS
+    <utlvce.model.Model object at 0x...>
     """
     A = _dag_avg_deg(p, k, random_state=random_state)
     return sample_parameters(A,
@@ -345,14 +349,15 @@ def sample_parameters(A,
         i.e. that the variances of the noise terms and latents are
         lower (variable-wise) than the other environments. With
         `obs=True`, the variances for first environment are sampled
-        from [*_lo, *_hi] (here `*=var,psi`) and, from `[*_lo +
-        int_*_lo, *_hi + int_*_hi]` for the remaining environments. If
-        `obs=False`, the latter interval is used for all
-        environments. Note that is not a necessary assumption for the
-        UT-LVCE estimator, but allows setting the intervention
-        strength with more certainty.
+        from `[var_lo, var_hi]` and, from `[var_lo + int_var_lo,
+        var_hi + int_var_hi]` for the remaining environments; the same
+        holds for the sampling of `psi`. If `obs=False`, the latter
+        interval is used for all environments. Note that is not a
+        necessary assumption for the UT-LVCE estimator, but makes the
+        actual intervention strength less sensitive to the random
+        sampling of parameters.
     random_state : int, default=42
-        To set the random state for reproducibility. Succesive calls
+        To set the random state for reproducibility. Successive calls
         with the same random state will return the same model.
     verbose: int, default = 0
         If debug and execution traces should be printed. `0`
@@ -374,12 +379,17 @@ def sample_parameters(A,
     Examples
     --------
     >>> A = np.array([[0, 0, 1], [0, 0, 1], [0, 0, 0]])
-    >>> model = sample_parameters(A,{2},2,5,0.5,0.6,3,6,0.2,0.4,1,5,0.7,0.8,False,True,42,0)
+    >>> sample_parameters(A,{2},2,5,0.5,0.6,3,6,0.2,0.4,1,5,0.7,0.8,False,True,42,0) #doctest: +ELLIPSIS
+    <utlvce.model.Model object at 0x...>
+
+    Requesting an inappropriate (>p) number of targets yields a `ValueError`:
 
     >>> sample_parameters(A,{3},2,5,0.5,0.6,3,6,0.2,0.4,1,5,0.7,0.8,False,True,42,0)
     Traceback (most recent call last):
     ...
     ValueError: The intervention targets must be a subset of [0,...,p-1].
+
+    A `ValueError` is raised if the given adjacency does not correspond to a DAG (e.g. it contains cycles):
 
     >>> A = np.array([[0, 0, 1], [0, 0, 1], [1, 0, 0]])    
     >>> sample_parameters(A,{2},2,5,0.5,0.6,3,6,0.2,0.4,1,5,0.7,0.8,False,True,42,0)
@@ -454,7 +464,7 @@ def intervention_targets(p, num_targets, random_state=42):
         The number of variables, i.e. targets will be sampled from
         `[0,p-1]`.
     num_targets : int or tuple
-        Specifies the the number of targets. If a two-element tuple,
+        Specifies the number of targets. If a two-element tuple,
         the number of targets is sampled uniformly at random from
         `[size[0], size[1]]`
     random_state : int
@@ -486,6 +496,8 @@ def intervention_targets(p, num_targets, random_state=42):
 
     >>> intervention_targets(10, 0)
     set()
+
+    Requesting an inappropriate (>p) number of targets yields a `ValueError`:
 
     >>> intervention_targets(10, 11)
     Traceback (most recent call last):

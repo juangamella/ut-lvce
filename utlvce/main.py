@@ -63,7 +63,7 @@ def equivalence_class(candidate_dags, data, prune_edges=False,
                       B_solver='grad',
                       random_state=42,
                       verbose=0):
-    """Estimate the equivalence class of the data-generating model from an
+    """Estimate the equivalence class of the best scoring graph from an
     initial set of candidate DAGs.
 
     Parameters
@@ -108,7 +108,7 @@ def equivalence_class(candidate_dags, data, prune_edges=False,
        subroutine.
     threshold_score: float, default=1e-5
        For the gradient descent subroutines, if change in score
-       between succesive iterations is below this threshold, stop.
+       between successive iterations is below this threshold, stop.
     learning_rate: float, default=1
         The initial learning rate(factor by which gradient is
         multiplied) for the gradient descent subroutines.
@@ -118,7 +118,7 @@ def equivalence_class(candidate_dags, data, prune_edges=False,
         `grad`, `adaptive` and `cvx`.
     random_state : int, default=42
         To set the random state for reproducibility when randomly
-        splitting the data. Succesive calls with the same random state
+        splitting the data. Successive calls with the same random state
         will have the same result.
     verbose: int, default = 0
         If debug and execution traces should be printed. `0`
@@ -227,7 +227,7 @@ def equivalence_class_w_ges(data,
        subroutine.
     threshold_score: float, default=1e-5
        For the gradient descent subroutines, if change in score
-       between succesive iterations is below this threshold, stop.
+       between successive iterations is below this threshold, stop.
     learning_rate: float, default=1
         The initial learning rate(factor by which gradient is
         multiplied) for the gradient descent subroutines.
@@ -237,7 +237,7 @@ def equivalence_class_w_ges(data,
         `grad`, `adaptive` and `cvx`.
     random_state : int, default=42
         To set the random state for reproducibility when randomly
-        splitting the data. Succesive calls with the same random state
+        splitting the data. Successive calls with the same random state
         will have the same result.
     verbose: int, default = 0
         If debug and execution traces should be printed. `0`
@@ -346,7 +346,7 @@ def _fit(data,
        subroutine.
     threshold_score: float
        For the gradient descent subroutines, if change in score
-       between succesive iterations is below this threshold, stop.
+       between successive iterations is below this threshold, stop.
     learning_rate: float
         The initial learning rate(factor by which gradient is
         multiplied) for the gradient descent subroutines.
@@ -398,7 +398,7 @@ def _fit(data,
         and the resulting graphs are pooled.
     random_state : int, default=42
         To set the random state for reproducibility when randomly
-        splitting the data. Succesive calls with the same random state
+        splitting the data. Successive calls with the same random state
         will have the same result.
     store_history : int, default=1
        If the execution history should be stored and returned, and in what level of detail, where

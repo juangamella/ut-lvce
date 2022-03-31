@@ -43,8 +43,9 @@ endif
 
 # Run the example scripts in the README
 examples:
-	PYTHONPATH=./ python3 docs/equivalence_class_example.py
-	PYTHONPATH=./ python3 docs/equivalence_class_ges_example.py
+	PYTHONPATH=./ python3 docs/algorithms_example.py
+#	PYTHONPATH=./ python3 docs/equivalence_class_example.py
+#	PYTHONPATH=./ python3 docs/equivalence_class_ges_example.py
 
 # Run the doctests
 doctests:

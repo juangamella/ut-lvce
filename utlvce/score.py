@@ -28,13 +28,18 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-"""This module contains the implementation of the alternating
-optimization procedure described in the paper, and used to fit/score a
-given DAG adjacency to the data.
+"""The :mod:`utlvce.score` module contains the implementation of the alternating
+optimization procedure described in the paper, which is used to fit a
+UT-LVCE model to the data and compute its likelihood score.
 
-The procedure is implemented in the `Score` class, together with a
-caching mechanism to avoid re-running the procedure for the same DAG /
-intervention targets.
+The procedure is accessed through the :class:`utlvce.score.Score`
+class, which contains a caching mechanism (see class
+:class:`utlvce.score._Cache`) to avoid re-running the procedure for
+the same DAG / intervention targets. For more details on the
+implementation please refer to section 4.1 of the `paper
+<https://arxiv.org/abs/2101.06950>`_ and to the `source-code
+<https://github.com/juangamella/ut-lvce/blob/master/utlvce/score.py>`_.
+
 """
 
 import numpy as np
@@ -86,7 +91,7 @@ class Score():
        subroutine.
     threshold_score: float
        For the gradient descent subroutines, if change in score
-       between succesive iterations is below this threshold, stop.
+       between successive iterations is below this threshold, stop.
     learning_rate: float
         The initial learning rate(factor by which gradient is
         multiplied) for the gradient descent subroutines.
@@ -130,7 +135,7 @@ class Score():
            subroutine.
         threshold_score: float
            For the gradient descent subroutines, if change in score
-           between succesive iterations is below this threshold, stop.
+           between successive iterations is below this threshold, stop.
         learning_rate: float
             The initial learning rate(factor by which gradient is
             multiplied) for the gradient descent subroutines.
@@ -152,6 +157,9 @@ class Score():
 
         Examples
         --------
+
+        Initializing the :class:`utlvce.score.Score` using the "raw" data:
+
         >>> score_params = {'psi_max': None,
         ...                 'psi_fixed': False,
         ...                 'max_iter': 1000,
@@ -161,19 +169,18 @@ class Score():
         ...                 'threshold_score': 1e-5,
         ...                 'learning_rate': 1,
         ...                 'cache': True}
-
-        Passing raw data:
-
         >>> data = list(rng.uniform(size=(5,1000,20)))
-        >>> _ = Score(data, num_latent=2, **score_params)
+        >>> Score(data, num_latent=2, **score_params) #doctest: +ELLIPSIS        
+        <__main__.Score object at 0x...>
 
-        Passing pre-computed sample covariances:
+        Or passing pre-computed sample covariances:
 
         >>> n_obs = np.array([len(sample) for sample in data])
         >>> sample_covariances = np.array([np.cov(sample, rowvar=False) for sample in data])
-        >>> _ = Score((sample_covariances, n_obs), num_latent=2, **score_params)
+        >>> Score((sample_covariances, n_obs), num_latent=2, **score_params) #doctest: +ELLIPSIS
+        <__main__.Score object at 0x...>
 
-        Errors when not all samples have the same number of variables:
+        Errors are raised when not all samples have the same number of variables:
 
         >>> bad_data = data.copy()
         >>> bad_data[0] = bad_data[0][:,:-1]
@@ -189,7 +196,7 @@ class Score():
         ...
         ValueError: All samples must have the same number of variables.
 
-        Error when one sample has a single observation:
+        Or when one sample has a single observation:
 
         >>> bad_data = data.copy()
         >>> bad_data[0] = bad_data[0][[0], :]
@@ -278,7 +285,7 @@ class Score():
             The observed variables for which interventions are allowed,
             i.e. for which the noise term distribution is allowed to change
             between environments.
-        init_model: Model(), default = None
+        init_model: utlvce.Model, default = None
             To set a set of parameters, encoded by an instance of
             utlvce.model.Model as the starting point of the procedure.
         verbose: int, default = 0
@@ -293,8 +300,8 @@ class Score():
 
         Returns
         -------
-        model: Model()
-            The estimated model with all nuissance parameters. `model.B`
+        model: utlvce.Model
+            The estimated model with all nuisance parameters. `model.B`
             returns the connectivity(weight) matrix found to maximize the
             score.
         score: float
@@ -349,7 +356,7 @@ class Score():
         fluc_counter = 0
 
         # We stop the alternating procedure when
-        #   1. The L-infinity distance between succesive Bs drops below a threshold,
+        #   1. The L-infinity distance between successive Bs drops below a threshold,
         #   2. we reach a maximum number of iterations, or
         #   3. we reach a maximum number of fluctuations in the score (measured by threshold_fluctuation).
         while (dist_B > self.threshold_dist_B) and (i < self.max_iter) and (fluc_counter < self.max_fluctuations):
@@ -708,7 +715,7 @@ def _solve_for_gamma(model, sample_covariances, n_obs, threshold_score, learning
        (i.e. the sample size).
     threshold_score : float
         For the gradient descent subroutines, if change in score
-        between succesive iterations is below this threshold, stop.
+        between successive iterations is below this threshold, stop.
     learning_rate : float
         The initial learning rate (factor by which gradient is
         multiplied) of the gradient descent procedure.
@@ -735,7 +742,7 @@ def _solve_for_gamma(model, sample_covariances, n_obs, threshold_score, learning
         gradient = np.zeros_like(gamma)
 
         # Construct the gradient element by element
-        for l in range(model.num_latent):
+        for l in range(model.l):
             for k in range(model.p):
                 gradient_lk = 0
 
@@ -797,7 +804,7 @@ def _solve_for_rest(model, I, sample_covariances, n_obs, psi_max, psi_fixed, thr
        variables have all the same variance.
     threshold_score : float
         For the gradient descent subroutines, if change in score
-        between succesive iterations is below this threshold, stop.
+        between successive iterations is below this threshold, stop.
     learning_rate : float
         The initial learning rate (factor by which gradient is
         multiplied) of the gradient descent procedure.
@@ -832,7 +839,7 @@ def _solve_for_rest(model, I, sample_covariances, n_obs, psi_max, psi_fixed, thr
             gradient_omegas[h, :] = n_obs[h] / \
                 sum(n_obs) * np.diag(M - M @ N @ M)
             # Gradient for psis (compute for each element)
-            for k in range(model.num_latent):
+            for k in range(model.l):
                 T = np.zeros((model.p, model.p), dtype=float)
                 for i in range(model.p):
                     for j in range(model.p):
@@ -845,7 +852,7 @@ def _solve_for_rest(model, I, sample_covariances, n_obs, psi_max, psi_fixed, thr
             gradient_omegas[:, j] = gradient_omegas[:, j].mean()
         # If psi_fixed = True, impose constraint that psis are all equal
         if psi_fixed:
-            for j in range(model.num_latent):
+            for j in range(model.l):
                 gradient_psis[:, j] = gradient_psis[:, j].mean()
         return [gradient_omegas, gradient_psis]
 
