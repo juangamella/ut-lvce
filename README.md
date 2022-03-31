@@ -12,9 +12,6 @@ You can clone this repo or install the package using pip:
 pip install utlvce
 ```
 
-## Overview
-
-
 ## Documentation
 
 You can find the docs at https://sempler.readthedocs.io/en/latest/.
