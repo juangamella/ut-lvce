@@ -12,6 +12,7 @@ Welcome to utlvce's documentation!
 
    self
    model
+   score
    generators
 
 
