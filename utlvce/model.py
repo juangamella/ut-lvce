@@ -62,7 +62,7 @@ class Model():
     omegas : numpy.ndarray
         The `e x p` matrix containing the variances of the observed variables' noise terms.
     psis : numpy.ndarray
-        The `e x l` array containing with the variances of the latent variables for each environment.
+        The `e x l` array with the variances of the latent variables for each environment.
 
     """
     # TODO: check that psis, omegas are non-megative
@@ -81,7 +81,7 @@ class Model():
         omegas : numpy.ndarray
             A `e x p` matrix containing containing the variances of the observed variables' noise terms.
         psis : numpy.ndarray
-            A `e x l` array containing with the variances of the latent variables for each environment.
+            A `e x l` array with the variances of the latent variables for each environment.
 
         Returns
         -------

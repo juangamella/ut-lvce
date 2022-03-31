@@ -29,7 +29,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 """
-This module contains functions to generate random models from fixed or random DAG adjacencies.
+This module contains functions to generate random linear, Gaussian causal models with latent effects from fixed or random DAG adjacencies.
 """
 
 
