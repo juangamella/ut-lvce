@@ -735,7 +735,7 @@ def _solve_for_gamma(model, sample_covariances, n_obs, threshold_score, learning
         gradient = np.zeros_like(gamma)
 
         # Construct the gradient element by element
-        for l in range(model.num_latent):
+        for l in range(model.l):
             for k in range(model.p):
                 gradient_lk = 0
 
@@ -832,7 +832,7 @@ def _solve_for_rest(model, I, sample_covariances, n_obs, psi_max, psi_fixed, thr
             gradient_omegas[h, :] = n_obs[h] / \
                 sum(n_obs) * np.diag(M - M @ N @ M)
             # Gradient for psis (compute for each element)
-            for k in range(model.num_latent):
+            for k in range(model.l):
                 T = np.zeros((model.p, model.p), dtype=float)
                 for i in range(model.p):
                     for j in range(model.p):
@@ -845,7 +845,7 @@ def _solve_for_rest(model, I, sample_covariances, n_obs, psi_max, psi_fixed, thr
             gradient_omegas[:, j] = gradient_omegas[:, j].mean()
         # If psi_fixed = True, impose constraint that psis are all equal
         if psi_fixed:
-            for j in range(model.num_latent):
+            for j in range(model.l):
                 gradient_psis[:, j] = gradient_psis[:, j].mean()
         return [gradient_omegas, gradient_psis]
 

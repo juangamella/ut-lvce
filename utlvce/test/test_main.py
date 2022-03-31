@@ -80,7 +80,7 @@ class TestGES(unittest.TestCase):
             # Build model
             model = sample_model(p, true_I, num_latent, e, var_lo,
                                  var_hi, B_lo, B_hi, random_state=i)
-            X, sample_covariances, n_obs = model.sample(n)
+            X = model.sample(n)
             # Run GES
             print("Running GES...", end="")
             start = time.time()

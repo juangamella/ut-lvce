@@ -292,7 +292,7 @@ class ScoreDagTests(unittest.TestCase):
             model = sample_model(p, set(range(p)), num_latent, e, var_lo,
                                  var_hi, B_lo, B_hi, random_state=i)
             # print(model)
-            _, sample_covariances, n_obs = model.sample(n)
+            _, sample_covariances, n_obs = model.sample(n, compute_covs=True)
             pop_score = model.score(sample_covariances, n_obs)
             score_class = Score((sample_covariances, n_obs),
                                 num_latent=num_latent, psi_max=None, psi_fixed=False,
@@ -350,10 +350,11 @@ class ScoreDagTests(unittest.TestCase):
         for i in range(G):
             print("\nGraph %d" % i)
             # Build model
-            model = sample_model(p, set(range(p)), num_latent, e, var_lo,
-                                 var_hi, B_lo, B_hi, random_state=i)
+            model = sample_model(p, set(range(p)), num_latent,
+                                 e, var_lo, var_hi, B_lo, B_hi, random_state=i)
             # print(model)
-            _, sample_covariances, n_obs = model.sample(n, random_state=i)
+            _, sample_covariances, n_obs = model.sample(
+                n, compute_covs=True, random_state=i)
             pop_score = model.score(sample_covariances, n_obs)
 
             score_class = Score((sample_covariances, n_obs),
@@ -418,7 +419,8 @@ class ScoreDagTests(unittest.TestCase):
             model = sample_model(p, set(range(p)), num_latent, e, var_lo,
                                  var_hi, B_lo, B_hi, random_state=i)
             # print(model)
-            _, sample_covariances, n_obs = model.sample(n, random_state=i)
+            _, sample_covariances, n_obs = model.sample(
+                n, compute_covs=True, random_state=i)
             pop_score = model.score(sample_covariances, n_obs)
             start = time.time()
 
@@ -498,7 +500,8 @@ class ScoreDagTests(unittest.TestCase):
             model = sample_model(p, set(range(p)), num_latent, e, var_lo,
                                  var_hi, B_lo, B_hi, random_state=i)
             # print(model)
-            _, sample_covariances, n_obs = model.sample(n, random_state=i)
+            _, sample_covariances, n_obs = model.sample(
+                n, compute_covs=True, random_state=i)
             pop_score = model.score(sample_covariances, n_obs)
             start = time.time()
 
@@ -635,7 +638,8 @@ class ScoreDagTests(unittest.TestCase):
             # Build model
             model = sample_model(p, true_I, num_latent, e, var_lo,
                                  var_hi, B_lo, B_hi, random_state=i)
-            _, sample_covariances, n_obs = model.sample(n, random_state=i)
+            _, sample_covariances, n_obs = model.sample(
+                n, compute_covs=True, random_state=i)
             pop_score = model.score(sample_covariances, n_obs)
             # Get equivalent DAGs (put true DAG in first position)
             icpdag = utils.dag_to_icpdag(model.A, true_I)
@@ -721,7 +725,7 @@ class BSolverTests(unittest.TestCase):
         omegas = rng.uniform(size=(5, 3))
         psis = rng.uniform(size=(5, 2))
         model = Model(A, B, gamma, omegas, psis)
-        X, sample_covariances, n_obs = model.sample(100)
+        X, sample_covariances, n_obs = model.sample(100, True)
         B = utlvce.score._solve_for_B_grad(
             model, sample_covariances, n_obs, self.debug)
         mask = np.logical_not(A)
@@ -739,7 +743,7 @@ class BSolverTests(unittest.TestCase):
         psis = rng.uniform(size=(5, 2))
         model = Model(A, B, gamma, omegas, psis)
         X, sample_covariances, n_obs = model.sample(
-            round(1e6), random_state=42)
+            round(1e6), compute_covs=True, random_state=42)
         # Solve for B
         estimated_B = utlvce.score._solve_for_B_grad(
             model, sample_covariances, n_obs, self.debug)
