@@ -12,10 +12,10 @@ You can clone this repo or install the package using pip:
 pip install utlvce
 ```
 
-## Documentation
+### Documentation
 
 You can find the docs at https://sempler.readthedocs.io/en/latest/.
   
-## Feedback
+### Feedback
 
 Feedback is most welcome! You can add an issue  or send an [email](mailto:juan.gamella@stat.math.ethz.ch>).
