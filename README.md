@@ -4,7 +4,7 @@ This repository contains a Python implementation of the UT-LVCE algorithms from 
 
 You can find the full docs at https://utlvce.readthedocs.io/en/latest/.
 
-The code to reproduce the experiments and figures in the paper can be found in a separate repository: [ut-lvce-paper](https://github.com/juangamella/ut-lvce-paper).
+The code to reproduce the experiments and figures in the paper can be found in a separate [repository](https://github.com/juangamella/ut-lvce-paper).
 
 ### Installation
 You can clone this repo or install using pip:
