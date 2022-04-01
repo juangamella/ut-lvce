@@ -1,5 +1,5 @@
 v0.1.1, 2022-03-31
--- Fixed broken links in documentation
+-- Fixed broken links in documentation, minor edits
 v0.1.0, 2022-03-31
 -- Created sphynx documentation, README, etc.
 -- Minor refactoring in model module
