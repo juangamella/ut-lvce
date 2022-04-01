@@ -30,7 +30,7 @@
 
 """The :mod:`utlvce.score` module contains the implementation of the alternating
 optimization procedure described in the paper, which is used to fit a
-UT-LVCE model to the data and compute its likelihood score.
+UT-LVCE model to the data and compute its likelihood.
 
 The procedure is accessed through the :class:`utlvce.score.Score`
 class, which contains a caching mechanism (see class

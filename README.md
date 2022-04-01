@@ -14,7 +14,7 @@ pip install utlvce
 
 ### Documentation
 
-You can find the docs at https://sempler.readthedocs.io/en/latest/.
+You can find the docs at https://utlvce.readthedocs.io/en/latest/.
 
 
 ### Versioning
