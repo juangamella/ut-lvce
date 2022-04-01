@@ -23,7 +23,7 @@ How to run the UT-LVCE algorithms
 
 If you're interested in running the algorithms proposed in the paper for your own work, you can find details on how to do so and examples under the section :ref:`Running the UT-LVCE algorithms`.
 
-We also document here the other functionalities of the package, such as generating synthetic data and random models for your own experiments (see :mod:`utlvce.generators` and :class:`utlvce.model`). If you're interested in the alternating optimization procedure from section 4.1, you can find more details under :mod:`utlvce.score`.
+This page also documents the other functionalities of the package, such as generating synthetic data and random models for your own experiments (see :mod:`utlvce.generators` and :class:`utlvce.model`). If you're interested in the alternating optimization procedure from section 4.1, you can find more details under :mod:`utlvce.score`.
 
 Versioning
 ----------
