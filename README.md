@@ -1,5 +1,9 @@
 # UT-LVCE: Perturbations and Causality in Gaussian Latent Variable Models
 
+[![PyPI version](https://badge.fury.io/py/utlvce.svg)](https://badge.fury.io/py/utlvce)
+[![Downloads](https://static.pepy.tech/badge/utlvce)](https://pepy.tech/project/utlvce)
+[![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+
 This repository contains a Python implementation of the UT-LVCE algorithms from the 2022 [paper](https://arxiv.org/abs/2101.06950) "Perturbations and Causality in Gaussian Latent Variable Models", by A. Taeb, JL. Gamella, C. Heinze-Deml and P. Bühlmann.
 
 It is also available as the python package `utlvce`. You can find the full documentation at https://utlvce.readthedocs.io/en/latest/.
